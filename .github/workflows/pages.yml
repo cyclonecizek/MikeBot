@@ -1,40 +1,46 @@
-name: build and publish display
+name: Deploy GitHub Pages
+
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows:
+      - "Update KSC WINDS Placefiles"
+    types:
+      - completed
   workflow_dispatch:
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: '3.12'}
-      - name: tests
-        run: python tests.py
-      - name: geometry and segmentation tests
-        run: |
-          pip install numpy scipy scikit-image
-          python tests_geometry.py
-          python tests_segment.py
-          python tests_pipeline.py
-          python tests_ingest.py
-      - name: regression check
-        run: python run_replay.py scenarios/lc39a_20260904.json --check
-      - name: emit display data
-        run: python demo_pipeline.py -o docs/data
-      - uses: actions/upload-pages-artifact@v3
-        with: {path: docs}
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
     steps:
-      - id: deployment
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4

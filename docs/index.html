@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLCC display &mdash; LC-39A</title>
+<style>
+  :root{
+    --bg:#f6f5f1; --panel:#fff; --ink:#26251f; --muted:#6b6a63; --line:#dedcd4;
+    --scope:#191b1d; --scope-ink:#e3e1d9; --scope-muted:#9c9a92; --scope-grid:#3a3d40;
+    --go:#3f7d20; --go-bg:#e8f2e0; --nogo:#a52a24; --nogo-bg:#f8e6e4;
+    --wait:#8a5a12; --wait-bg:#faeedb; --ind:#5a5a5a; --ind-bg:#eceae4;
+    --cumulus:#ef9f27; --att:#afa9ec; --det:#ed93b1; --debris:#f0997b;
+    --layer:#85b7eb; --cirrus:#b4b2a9; --unk:#888780;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:20px;background:var(--bg);color:var(--ink);
+       font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+  .wrap{max-width:760px;margin:0 auto}
+  h1{font-size:17px;font-weight:600;margin:0 0 2px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .banner{display:flex;flex-wrap:wrap;align-items:center;gap:12px;
+          padding:12px 14px;border-radius:10px;margin-bottom:12px}
+  .banner .big{font-size:19px;font-weight:600}
+  .banner .grow{flex:1;min-width:180px;font-size:13px}
+  .scope{background:var(--scope);border-radius:10px;margin-bottom:12px;padding:4px 0}
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+       gap:10px;margin-bottom:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .card .k{font-size:12px;color:var(--muted)}
+  .card .v{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+  .crit{border-top:1px solid var(--line)}
+  .crit details{border-bottom:1px solid var(--line)}
+  .crit summary{display:flex;align-items:center;gap:10px;padding:9px 2px;
+                cursor:pointer;list-style:none}
+  .crit summary::-webkit-details-marker{display:none}
+  .crit .id{font-variant-numeric:tabular-nums;font-weight:600;min-width:70px}
+  .crit .sec{color:var(--muted);font-size:12px;min-width:56px}
+  .crit .ttl{flex:1;min-width:0}
+  .pill{font-size:12px;padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .go{color:var(--go);background:var(--go-bg)}
+  .no_go{color:var(--nogo);background:var(--nogo-bg)}
+  .no_go_until{color:var(--wait);background:var(--wait-bg)}
+  .indeterminate{color:var(--ind);background:var(--ind-bg)}
+  pre{margin:0 0 10px;padding:10px;background:#f0efe9;border-radius:6px;
+      font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-x:auto}
+  .tlabel{font-size:12px;color:var(--muted);margin:6px 0 3px}
+  .ctl{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .ctl input[type=range]{flex:1}
+  .ovr{border:1px solid var(--line);border-radius:8px;background:var(--panel);
+       padding:10px 12px;margin-bottom:12px}
+  .ovr h3{margin:0 0 6px;font-size:13px;font-weight:600}
+  .ovr .item{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;
+             padding:5px 0;border-top:1px solid var(--line);font-size:13px}
+  .ovr .who{color:var(--muted);font-size:12px}
+  .ovr .just{flex-basis:100%;color:var(--muted);font-size:12px;font-style:italic}
+  .ovr .chg{font-size:12px;color:var(--muted);margin-top:6px;
+            font-variant-numeric:tabular-nums}
+  .applied{color:var(--go);background:var(--go-bg)}
+  .degraded,.stale,.expired,.orphaned{color:var(--wait);background:var(--wait-bg)}
+  .warn{background:var(--wait-bg);color:var(--wait);padding:8px 12px;
+        border-radius:8px;font-size:13px;margin-bottom:12px}
+  .toggles{display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+           margin-bottom:10px;font-size:13px;color:var(--muted)}
+  .toggles label{display:flex;gap:5px;align-items:center;cursor:pointer}
+  .cbar{height:10px;border-radius:3px;flex:1;min-width:120px;
+        background:linear-gradient(to right,#7a8fa6,#4a7ab5,#3aa5d8,#2fc6c6,
+        #35c15a,#1f9e3e,#e8e332,#e9b02c,#e5772a,#dc3b28,#b1231d,#c62aa0,#e0a8e8)}
+  .foot{color:var(--muted);font-size:12px;margin-top:18px;border-top:1px solid var(--line);
+        padding-top:10px}
+  text{font-family:ui-sans-serif,system-ui,sans-serif}
+  .sl{font-size:11px;fill:var(--scope-muted)}
+  .slb{font-size:12px;fill:var(--scope-ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Lightning Launch Commit Criteria &mdash; <span id="pad">LC-39A</span></h1>
+  <div class="sub" id="scenario-name">loading&hellip;</div>
+
+  <div class="warn" id="unofficial">
+    Unofficial. Not for operational use. This is a research and training tool;
+    NASA-STD-4010B requires trained weather personnel and a final approval authority.
+  </div>
+  <div class="warn" id="gate" hidden></div>
+
+  <div class="banner" id="banner"><div class="big">&mdash;</div></div>
+  <div class="ovr" id="overrides" hidden></div>
+
+  <div class="ctl" id="ctl" hidden>
+    <label for="frame" style="font-size:13px;color:var(--muted)">frame</label>
+    <input type="range" id="frame" min="0" max="0" value="0">
+    <span id="frame-time" style="font-variant-numeric:tabular-nums"></span>
+  </div>
+
+  <div class="toggles">
+    <label><input type="checkbox" id="radar-on" checked> radar</label>
+    <label><input type="checkbox" id="show-below"> show below 0 dBZ</label>
+    <span>0</span><span class="cbar"></span><span>65 dBZ</span>
+    <span id="radar-src"></span>
+  </div>
+  <div class="scope"><svg id="plan" width="100%" viewBox="0 0 700 460"></svg></div>
+  <div class="scope"><svg id="xsec" width="100%" viewBox="0 0 700 290"></svg></div>
+
+  <div class="row" id="timers"></div>
+  <div class="crit" id="criteria"></div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const TYPE_COLOR = {
+  cumulus:"var(--cumulus)", smoke_cumulus:"var(--cumulus)",
+  attached_anvil:"var(--att)", detached_anvil:"var(--det)",
+  debris:"var(--debris)", thick_layer:"var(--layer)",
+  cirriform:"var(--cirrus)", unclassified:"var(--unk)"
+};
+const STATE_LABEL = {GO:"GO", NO_GO:"NO-GO", NO_GO_UNTIL:"NO-GO until",
+                     INDETERMINATE:"indeterminate"};
+const BUFFER_STROKE = {NO_GO:"#e24b4a", NO_GO_UNTIL:"#c8891f",
+                       INDETERMINATE:"#888780", GO:"#888780"};
+
+// NWS-style reflectivity ramp. The visible edge of the coloured region is
+// the 0 dBZ contour, which is the standard's own cloud boundary -- so with
+// "show below 0 dBZ" off, what you see outlined IS what the segmenter used.
+const RADAR_STOPS = [[0,122,143,166],[5,74,122,181],[10,58,165,216],[15,47,198,198],
+  [20,53,193,90],[25,31,158,62],[30,232,227,50],[35,233,176,44],[40,229,119,42],
+  [45,220,59,40],[50,177,35,29],[55,198,42,160],[60,224,168,232],[70,255,255,255]];
+
+function colorFor(dbz) {
+  if (dbz <= RADAR_STOPS[0][0]) return RADAR_STOPS[0].slice(1);
+  for (let i = 1; i < RADAR_STOPS.length; i++) {
+    const a = RADAR_STOPS[i - 1], b = RADAR_STOPS[i];
+    if (dbz <= b[0]) {
+      const f = (dbz - a[0]) / (b[0] - a[0]);
+      return [1, 2, 3].map(k => Math.round(a[k] + f * (b[k] - a[k])));
+    }
+  }
+  return RADAR_STOPS[RADAR_STOPS.length - 1].slice(1);
+}
+
+function decodeInt8(b64) {
+  const bin = atob(b64);
+  const out = new Int8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i) << 24 >> 24;
+  return out;
+}
+
+function rasterURL(r, showBelow) {
+  const c = document.createElement("canvas");
+  c.width = r.nx; c.height = r.ny;
+  const ctx = c.getContext("2d");
+  const img = ctx.createImageData(r.nx, r.ny);
+  const v = decodeInt8(r.data);
+  for (let k = 0; k < v.length; k++) {
+    const val = v[k];
+    let rr = 0, gg = 0, bb = 0, aa = 0;
+    if (val === r.unobservable) {
+      // Checkerboard alpha reads as hatching once upscaled: unobserved
+      // volume must never look like observed clear air.
+      const i = k % r.nx, j = (k / r.nx) | 0;
+      rr = gg = bb = 150; aa = ((i + j) % 2) ? 115 : 35;
+    } else if (val === r.no_echo) {
+      aa = 0;
+    } else if (val < 0 && !showBelow) {
+      aa = 0;
+    } else {
+      const c3 = colorFor(val);
+      rr = c3[0]; gg = c3[1]; bb = c3[2];
+      aa = val < 0 ? 80 : 225;
+    }
+    img.data[k * 4] = rr; img.data[k * 4 + 1] = gg;
+    img.data[k * 4 + 2] = bb; img.data[k * 4 + 3] = aa;
+  }
+  ctx.putImageData(img, 0, 0);
+  return c.toDataURL();
+}
+
+const radarOn = () => document.getElementById("radar-on").checked;
+const showBelow = () => document.getElementById("show-below").checked;
+
+const SVG = "http://www.w3.org/2000/svg";
+const el = (tag, attrs = {}, text) => {
+  const n = document.createElementNS(SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) if (v !== undefined && v !== null) n.setAttribute(k, v);
+  if (text !== undefined) n.textContent = text;
+  return n;
+};
+const hhmmss = iso => iso ? iso.slice(11, 19) + "Z" : "";
+
+function drawPlan(snap, verdict) {
+  const svg = document.getElementById("plan");
+  svg.replaceChildren();
+  const PX = 10, PAD = {x: 150, y: 380};
+  const az = (snap.azimuth_deg ?? 45) * Math.PI / 180;
+  const pos = (bearing, range) => ({
+    x: PAD.x + range * PX * Math.sin(bearing * Math.PI / 180),
+    y: PAD.y - range * PX * Math.cos(bearing * Math.PI / 180)
+  });
+
+  if (snap.radar && radarOn()) {
+    const rp = snap.radar.plan, h = (rp.extent.half_nmi || 26) * PX;
+    svg.append(el("image", {href: rasterURL(rp, showBelow()),
+                            x: PAD.x - h, y: PAD.y - h, width: 2 * h, height: 2 * h,
+                            preserveAspectRatio: "none",
+                            "image-rendering": "pixelated"}));
+  }
+
+  for (const r of [5, 10, 15]) {
+    svg.append(el("circle", {cx: PAD.x, cy: PAD.y, r: r * PX, fill: "none",
+                             stroke: "var(--scope-grid)", "stroke-width": .5}));
+  }
+  svg.append(el("text", {x: PAD.x + 4, y: PAD.y - 10 * PX - 5, class: "sl"}, "10 nmi"));
+
+  const end = {x: PAD.x + 25 * PX * Math.sin(az), y: PAD.y - 25 * PX * Math.cos(az)};
+  svg.append(el("line", {x1: PAD.x, y1: PAD.y, x2: end.x, y2: end.y,
+                         stroke: "#d3d1c7", "stroke-width": 14, "stroke-opacity": .22,
+                         "stroke-linecap": "round"}));
+  svg.append(el("line", {x1: PAD.x, y1: PAD.y, x2: end.x, y2: end.y,
+                         stroke: "#d3d1c7", "stroke-width": 1, "stroke-dasharray": "4 4"}));
+
+  for (const [oid, o] of Object.entries(snap.objects)) {
+    if (o.range_nmi == null) continue;
+    const p = pos(o.bearing_deg ?? 0, o.range_nmi);
+    const rr = (o.radius_nmi ?? 1) * PX;
+    const unit = verdict.units[oid];
+    if (unit && unit.buffer_nmi > 0) {
+      svg.append(el("circle", {cx: p.x, cy: p.y, r: rr + unit.buffer_nmi * PX,
+                               fill: "none", stroke: BUFFER_STROKE[unit.state],
+                               "stroke-width": unit.state === "NO_GO" ? 1.4 : 1,
+                               "stroke-dasharray": "5 4"}));
+    }
+    svg.append(el("ellipse", {cx: p.x, cy: p.y, rx: rr, ry: rr * .68,
+                              fill: TYPE_COLOR[o.cloud_type] || "var(--unk)",
+                              "fill-opacity": .35,
+                              stroke: TYPE_COLOR[o.cloud_type] || "var(--unk)",
+                              "stroke-width": .5}));
+    if (o.overridden_by) {
+      svg.append(el("ellipse", {cx: p.x, cy: p.y, rx: rr + 4, ry: rr * .68 + 4,
+                                fill: "none", stroke: "#f1efe8", "stroke-width": 1.2,
+                                "stroke-dasharray": "3 3"}));
+      svg.append(el("text", {x: p.x, y: p.y + 17, class: "sl", "text-anchor": "middle"},
+                    `${o.overridden_by} \u00B7 was ${o.override_original_type}`));
+    }
+    svg.append(el("text", {x: p.x, y: p.y + 4, class: "slb",
+                           "text-anchor": "middle"}, oid));
+  }
+  svg.append(el("circle", {cx: PAD.x, cy: PAD.y, r: 5, fill: "#f1efe8"}));
+  svg.append(el("text", {x: PAD.x - 30, y: PAD.y + 22, class: "slb"}, snap.pad || "pad"));
+
+  let lx = 24;
+  for (const [type, label] of [["cumulus", "Cumulus"], ["attached_anvil", "Att anvil"],
+       ["detached_anvil", "Det anvil"], ["debris", "Debris"], ["thick_layer", "Layer"]]) {
+    svg.append(el("rect", {x: lx, y: 434, width: 10, height: 10, rx: 2,
+                           fill: TYPE_COLOR[type], "fill-opacity": .5}));
+    svg.append(el("text", {x: lx + 15, y: 443, class: "sl"}, label));
+    lx += label.length * 6.6 + 34;
+  }
+}
+
+function drawXsec(snap) {
+  const svg = document.getElementById("xsec");
+  svg.replaceChildren();
+  const X0 = 60, X1 = 596, Y0 = 245, Y1 = 35, MAXR = 25, MAXZ = 18;
+  const sx = d => X0 + (d / MAXR) * (X1 - X0);
+  const sy = z => Y0 - (z / MAXZ) * (Y0 - Y1);
+
+  if (snap.radar && radarOn()) {
+    const rx = snap.radar.xsec;
+    svg.append(el("image", {href: rasterURL(rx, showBelow()),
+                            x: X0, y: Y1, width: X1 - X0, height: Y0 - Y1,
+                            preserveAspectRatio: "none",
+                            "image-rendering": "pixelated"}));
+  }
+
+  for (const t of ["0", "-10", "-20"]) {
+    const z = snap.profile.isotherms[t];
+    if (z == null) continue;
+    const y = sy(z / 1000);
+    svg.append(el("line", {x1: X0, y1: y, x2: X1, y2: y, stroke: "#4a4d50",
+                           "stroke-width": .5, "stroke-dasharray": "3 3"}));
+    svg.append(el("text", {x: X1 + 6, y: y + 4, class: "sl"},
+                 `${t} \u00B0C  ${(z / 1000).toFixed(1)} km`));
+  }
+  svg.append(el("line", {x1: X0, y1: Y0, x2: X1, y2: Y0, stroke: "#5f5e5a",
+                         "stroke-width": .5}));
+
+  for (const [oid, o] of Object.entries(snap.objects)) {
+    if (o.downrange_nmi == null || o.top_alt_km == null) continue;
+    const x = sx(o.downrange_nmi), w = ((o.radius_nmi ?? 1) / MAXR) * (X1 - X0);
+    const yt = sy(o.top_alt_km), yb = sy(o.base_alt_km ?? 0);
+    svg.append(el("rect", {x: x - w, y: yt, width: w * 2, height: Math.max(3, yb - yt),
+                           rx: 5, fill: TYPE_COLOR[o.cloud_type] || "var(--unk)",
+                           "fill-opacity": .32,
+                           stroke: TYPE_COLOR[o.cloud_type] || "var(--unk)",
+                           "stroke-width": .5}));
+    svg.append(el("text", {x: x, y: yb - 6, class: "slb", "text-anchor": "middle"}, oid));
+  }
+
+  const traj = snap.trajectory || [];
+  if (traj.length > 1) {
+    const d = traj.map((p, i) => `${i ? "L" : "M"}${sx(p[0])} ${sy(p[1])}`).join(" ");
+    svg.append(el("path", {d, fill: "none", stroke: "#f1efe8", "stroke-width": 10,
+                           "stroke-opacity": .2, "stroke-linecap": "round"}));
+    svg.append(el("path", {d, fill: "none", stroke: "#f1efe8", "stroke-width": 1,
+                           "stroke-dasharray": "4 4"}));
+  }
+  svg.append(el("text", {x: X0, y: Y0 + 22, class: "sl"}, "0 nmi"));
+  svg.append(el("text", {x: X1, y: Y0 + 22, class: "sl", "text-anchor": "end"},
+               `${MAXR} nmi downrange`));
+}
+
+function renderTraceText(node, depth = 0) {
+  const pad = "  ".repeat(depth);
+  let out = `${pad}[${node.value}] ${node.label}`;
+  if (node.detail) out += `  (${node.detail})`;
+  out += "\n";
+  for (const c of node.children) out += renderTraceText(c, depth + 1);
+  return out;
+}
+
+function render(snap, verdict, meta) {
+  document.getElementById("pad").textContent = snap.pad || "";
+  document.getElementById("scenario-name").textContent =
+    `${meta.name || ""} \u00B7 azimuth ${(snap.azimuth_deg ?? 0).toFixed(0)}\u00B0 ` +
+    `\u00B7 field mills: ${snap.field_mills_available ? "yes" : "no"} ` +
+    `\u00B7 tribo: ${snap.vehicle && snap.vehicle.triboelectric_exemption
+        && snap.vehicle.triboelectric_exemption !== "none"
+        ? "exempt " + snap.vehicle.triboelectric_exemption : "not exempt"} ` +
+    `\u00B7 ${hhmmss(snap.time)}`;
+
+  const gate = document.getElementById("gate");
+  if (meta.manifest_gate_suppressed) {
+    gate.hidden = false;
+    gate.textContent = `Manifest gate suppressed (development). ` +
+      `${verdict.manifest_gaps.length} of 35 requirements are unencoded and are ` +
+      `being skipped, not evaluated.`;
+  } else if (verdict.manifest_gaps.length) {
+    gate.hidden = false;
+    gate.textContent = `${verdict.manifest_gaps.length} of 35 requirements unencoded, ` +
+      `forcing a global indeterminate result.`;
+  } else gate.hidden = true;
+
+  const blocking = verdict.results.filter(r => r.state !== "GO");
+  const banner = document.getElementById("banner");
+  banner.className = "banner " + verdict.state.toLowerCase();
+  banner.replaceChildren();
+  const big = document.createElement("div");
+  big.className = "big";
+  big.textContent = STATE_LABEL[verdict.state];
+  const grow = document.createElement("div");
+  grow.className = "grow";
+  const counts = ["NO_GO", "NO_GO_UNTIL", "INDETERMINATE"]
+    .map(s => [s, blocking.filter(r => r.state === s).length])
+    .filter(([, n]) => n > 0)
+    .map(([s, n]) => `${n} ${STATE_LABEL[s].toLowerCase()}`);
+  grow.textContent = counts.join(" \u00B7 ") || "all encoded criteria satisfied";
+  const when = document.createElement("div");
+  when.style.fontSize = "13px";
+  when.textContent = verdict.earliest_change
+    ? `earliest change ${hhmmss(verdict.earliest_change)}` : "";
+  banner.append(big, grow, when);
+
+  const ovr = document.getElementById("overrides");
+  const apps = verdict.overrides || [];
+  const odiff = verdict.override_diff;
+  if (!apps.length) { ovr.hidden = true; } else {
+    ovr.hidden = false;
+    ovr.replaceChildren();
+    const h = document.createElement("h3");
+    h.textContent = "Launch weather officer reclassification";
+    ovr.append(h);
+    for (const a of apps) {
+      const row = document.createElement("div");
+      row.className = "item";
+      row.innerHTML =
+        `<span class="pill ${a.status}">${a.status}</span>` +
+        `<strong>${a.object_id}</strong>` +
+        `<span>${a.original_type} \u2192 ${a.applied_type || a.requested_type}</span>` +
+        `<span class="who">${a.issued_by} \u00B7 issued ${hhmmss(a.issued_at)} ` +
+        `\u00B7 expires ${hhmmss(a.expires_at)}</span>` +
+        (a.detail ? `<span class="who">${a.detail}</span>` : "") +
+        (a.justification ? `<span class="just">${a.justification}</span>` : "");
+      ovr.append(row);
+    }
+    if (odiff && odiff.changes.length) {
+      const d = document.createElement("div");
+      d.className = "chg";
+      const lines = odiff.changes.map(c =>
+        `${c.requirement_id} [${c.unit_id}] ${c.before} \u2192 ${c.after} (${c.direction})`);
+      d.innerHTML = `without override: <strong>${odiff.baseline_state}</strong> ` +
+        `\u00B7 with: <strong>${odiff.overridden_state}</strong> ` +
+        `\u00B7 net ${odiff.direction}<br>` + lines.join("<br>") +
+        (odiff.unjustified_relaxations.length
+          ? `<br><strong style="color:var(--nogo)">relaxing override without ` +
+            `justification: ${odiff.unjustified_relaxations.join(", ")}</strong>` : "");
+      ovr.append(d);
+    }
+  }
+
+  document.getElementById("radar-src").textContent =
+    snap.radar ? snap.radar.source + " \u00B7 " + snap.radar.plan_mode : "no radar field";
+  CURRENT = {snap, verdict, meta};
+  drawPlan(snap, verdict);
+  drawXsec(snap);
+
+  const timers = document.getElementById("timers");
+  timers.replaceChildren();
+  const held = blocking.filter(r => r.release)
+    .sort((a, b) => a.release.localeCompare(b.release));
+  const seen = new Set();
+  for (const r of held) {
+    const key = r.requirement_id + r.unit_id;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const c = document.createElement("div");
+    c.className = "card";
+    c.innerHTML = `<div class="k">${r.requirement_id} \u00B7 ${r.unit_id}</div>
+                   <div class="v">${hhmmss(r.release)}</div>`;
+    timers.append(c);
+  }
+  if (!held.length) {
+    const c = document.createElement("div");
+    c.className = "card";
+    c.innerHTML = `<div class="k">holds</div><div class="v">none</div>`;
+    timers.append(c);
+  }
+
+  const crit = document.getElementById("criteria");
+  crit.replaceChildren();
+  const order = {NO_GO: 0, INDETERMINATE: 1, NO_GO_UNTIL: 2, GO: 3};
+  const sorted = [...verdict.results].sort((a, b) =>
+    order[a.state] - order[b.state] ||
+    parseInt(a.requirement_id.split(" ")[1]) - parseInt(b.requirement_id.split(" ")[1]));
+  for (const r of sorted) {
+    const d = document.createElement("details");
+    const s = document.createElement("summary");
+    s.innerHTML =
+      `<span class="id">${r.requirement_id}</span>` +
+      `<span class="sec">${r.section}</span>` +
+      `<span class="ttl">${r.title} <span style="color:var(--muted)">[${r.unit_id}]</span></span>` +
+      `<span class="pill ${r.state.toLowerCase()}">${STATE_LABEL[r.state]}` +
+      `${r.release ? " " + hhmmss(r.release) : ""}</span>`;
+    d.append(s);
+    const t1 = document.createElement("div"); t1.className = "tlabel"; t1.textContent = "trigger";
+    const p1 = document.createElement("pre"); p1.textContent = renderTraceText(r.trigger);
+    const t2 = document.createElement("div"); t2.className = "tlabel"; t2.textContent = "exception";
+    const p2 = document.createElement("pre"); p2.textContent = renderTraceText(r.exception);
+    d.append(t1, p1, t2, p2);
+    crit.append(d);
+  }
+
+  document.getElementById("foot").textContent =
+    `schema ${verdict.schema} \u00B7 evaluated ${hhmmss(verdict.time)} \u00B7 ` +
+    `${verdict.results.length} requirement/unit pairs`;
+}
+
+let CURRENT = null;
+for (const id of ["radar-on", "show-below"]) {
+  document.getElementById(id).addEventListener("change", () => {
+    if (CURRENT) render(CURRENT.snap, CURRENT.verdict, CURRENT.meta);
+  });
+}
+
+async function boot() {
+  try {
+    const bundle = await (await fetch("data/replay.json", {cache: "no-store"})).json();
+    const slider = document.getElementById("frame");
+    document.getElementById("ctl").hidden = false;
+    slider.max = bundle.frames.length - 1;
+    slider.value = bundle.frames.length - 1;
+    const show = i => {
+      const f = bundle.frames[i];
+      document.getElementById("frame-time").textContent = hhmmss(f.snapshot.time);
+      render(f.snapshot, f.verdict, bundle);
+    };
+    slider.addEventListener("input", () => show(+slider.value));
+    show(+slider.value);
+    return;
+  } catch (e) { /* fall through to live mode */ }
+
+  const poll = async () => {
+    try {
+      const [snap, verdict] = await Promise.all([
+        fetch("data/snapshot.json", {cache: "no-store"}).then(r => r.json()),
+        fetch("data/verdict.json", {cache: "no-store"}).then(r => r.json())
+      ]);
+      render(snap, verdict, {name: "live"});
+    } catch (e) {
+      document.getElementById("scenario-name").textContent =
+        "no data found at data/replay.json or data/verdict.json";
+    }
+  };
+  poll();
+  setInterval(poll, 30000);
+}
+boot();
+</script>
+</body>
+</html>

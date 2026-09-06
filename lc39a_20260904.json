@@ -1,0 +1,369 @@
+{
+  "name": "LC-39A afternoon convection, cell flashes and sheds an anvil",
+  "pad": "LC-39A",
+  "azimuth_deg": 45.0,
+  "field_mills_available": false,
+  "profile": {
+    "uncertainty_m": 300.0,
+    "levels": [
+      [
+        0,
+        29.0
+      ],
+      [
+        1000,
+        22.0
+      ],
+      [
+        2000,
+        15.5
+      ],
+      [
+        3000,
+        9.0
+      ],
+      [
+        3600,
+        5.0
+      ],
+      [
+        4600,
+        0.0
+      ],
+      [
+        5600,
+        -5.0
+      ],
+      [
+        6600,
+        -10.0
+      ],
+      [
+        7600,
+        -15.0
+      ],
+      [
+        8700,
+        -20.0
+      ],
+      [
+        10000,
+        -33.0
+      ],
+      [
+        12000,
+        -52.0
+      ],
+      [
+        14000,
+        -68.0
+      ],
+      [
+        16000,
+        -80.0
+      ]
+    ]
+  },
+  "objects": {
+    "DOMAIN": {
+      "cloud_type": "unclassified",
+      "producing_cloud_beyond_10nmi": false,
+      "corridor_penetrates_below_minus10c": true,
+      "velocity_at_penetration_ms": 640.0
+    },
+    "cu1": {
+      "cloud_type": "cumulus",
+      "slant_min_nmi": 4.3,
+      "horiz_min_nmi": 4.1,
+      "intersects_corridor": false,
+      "top_temp_c": -12.0,
+      "coldest_top_temp_c": -12.0,
+      "mrr_valid": true,
+      "observability": 1.0,
+      "bearing_deg": 18.0,
+      "range_nmi": 5.6,
+      "radius_nmi": 1.3,
+      "base_alt_km": 1.0,
+      "top_alt_km": 7.0,
+      "downrange_nmi": 5.0
+    },
+    "cell1": {
+      "cloud_type": "cumulus",
+      "slant_min_nmi": 9.0,
+      "horiz_min_nmi": 8.6,
+      "intersects_corridor": false,
+      "top_temp_c": -18.0,
+      "coldest_top_temp_c": -18.0,
+      "is_thunderstorm": false,
+      "mrr_valid": true,
+      "bearing_deg": 76.0,
+      "range_nmi": 10.6,
+      "radius_nmi": 2.5,
+      "base_alt_km": 0.8,
+      "top_alt_km": 10.2,
+      "downrange_nmi": 10.0
+    },
+    "av1": {
+      "absent": true,
+      "cloud_type": "attached_anvil",
+      "parent_ids": [
+        "cell1"
+      ],
+      "slant_min_nmi": 7.0,
+      "horiz_min_nmi": 6.8,
+      "intersects_corridor": false,
+      "is_thunderstorm": false,
+      "parent_coldest_top_temp_c": -34.0,
+      "portion_within_10nmi_all_below_0c": false,
+      "portion_within_5nmi_all_below_0c": false,
+      "mrr_valid": true,
+      "bearing_deg": 62.0,
+      "range_nmi": 8.4,
+      "radius_nmi": 3.6,
+      "base_alt_km": 8.0,
+      "top_alt_km": 11.0,
+      "downrange_nmi": 8.0
+    },
+    "ly1": {
+      "cloud_type": "thick_layer",
+      "is_thunderstorm": false,
+      "slant_min_nmi": 0.0,
+      "horiz_min_nmi": 0.0,
+      "intersects_corridor": true,
+      "layer_thickness_m": 1900.0,
+      "layer_spans_0_to_minus20": true,
+      "refl_0dbz_within_5nmi": true,
+      "mrr_ge_7p5_within_2nmi_last_hour": null,
+      "ever_connected_to_convection": false,
+      "observability": 0.6,
+      "bearing_deg": 45.0,
+      "range_nmi": 12.0,
+      "radius_nmi": 6.5,
+      "base_alt_km": 3.2,
+      "top_alt_km": 5.1,
+      "downrange_nmi": 12.0
+    }
+  },
+  "events": [
+    {
+      "kind": "lightning",
+      "time": "2026-09-04T21:04:12",
+      "object_id": "cell1",
+      "source": "GLM-19",
+      "detail": {
+        "distance_nmi": 8.2,
+        "footprint_km2": 340
+      }
+    },
+    {
+      "kind": "detachment",
+      "time": "2026-09-04T21:22:00",
+      "object_id": "av1",
+      "source": "tracker"
+    }
+  ],
+  "frames": [
+    {
+      "time": "2026-09-04T20:55:00",
+      "connections": []
+    },
+    {
+      "time": "2026-09-04T21:04:30",
+      "connections": [],
+      "objects": {
+        "cell1": {
+          "is_thunderstorm": true,
+          "top_temp_c": -34.0,
+          "coldest_top_temp_c": -34.0
+        }
+      }
+    },
+    {
+      "time": "2026-09-04T21:09:00",
+      "connections": [
+        [
+          "cell1",
+          "av1"
+        ]
+      ],
+      "objects": {
+        "cell1": {
+          "is_thunderstorm": true,
+          "top_temp_c": -34.0,
+          "coldest_top_temp_c": -34.0
+        },
+        "av1": {
+          "absent": false
+        }
+      }
+    },
+    {
+      "time": "2026-09-04T21:22:30",
+      "connections": [],
+      "objects": {
+        "cell1": {
+          "is_thunderstorm": true,
+          "top_temp_c": -30.0,
+          "coldest_top_temp_c": -34.0
+        },
+        "av1": {
+          "absent": false,
+          "cloud_type": "detached_anvil",
+          "slant_min_nmi": 6.2,
+          "horiz_min_nmi": 6.0
+        }
+      }
+    },
+    {
+      "time": "2026-09-04T21:36:00",
+      "connections": [],
+      "objects": {
+        "cu1": {
+          "top_temp_c": -6.0
+        },
+        "cell1": {
+          "is_thunderstorm": true,
+          "top_temp_c": -24.0,
+          "coldest_top_temp_c": -34.0
+        },
+        "av1": {
+          "absent": false,
+          "cloud_type": "detached_anvil",
+          "slant_min_nmi": 6.2,
+          "horiz_min_nmi": 6.0
+        }
+      }
+    },
+    {
+      "time": "2026-09-04T21:40:30",
+      "connections": [],
+      "objects": {
+        "cu1": {
+          "top_temp_c": -6.0
+        },
+        "cell1": {
+          "is_thunderstorm": true,
+          "top_temp_c": -21.0,
+          "coldest_top_temp_c": -34.0
+        },
+        "av1": {
+          "absent": false,
+          "cloud_type": "detached_anvil",
+          "slant_min_nmi": 6.2,
+          "horiz_min_nmi": 6.0,
+          "portion_within_10nmi_all_below_0c": true
+        }
+      }
+    }
+  ],
+  "expect": {
+    "2026-09-04T20:55:00": [
+      "LLCCR 10",
+      "LLCCR 21",
+      "LLCCR 22"
+    ],
+    "2026-09-04T21:04:30": [
+      "LLCCR 10",
+      "LLCCR 11",
+      "LLCCR 21",
+      "LLCCR 22",
+      "LLCCR 5",
+      "LLCCR 6"
+    ],
+    "2026-09-04T21:09:00": [
+      "LLCCR 10",
+      "LLCCR 11",
+      "LLCCR 14",
+      "LLCCR 15",
+      "LLCCR 21",
+      "LLCCR 5",
+      "LLCCR 6"
+    ],
+    "2026-09-04T21:22:30": [
+      "LLCCR 10",
+      "LLCCR 11",
+      "LLCCR 15",
+      "LLCCR 17",
+      "LLCCR 21",
+      "LLCCR 5",
+      "LLCCR 6"
+    ],
+    "2026-09-04T21:36:00": [
+      "LLCCR 11",
+      "LLCCR 15",
+      "LLCCR 21"
+    ],
+    "2026-09-04T21:40:30": [
+      "LLCCR 11",
+      "LLCCR 15",
+      "LLCCR 21"
+    ]
+  },
+  "trajectory": [
+    [
+      0,
+      0.0,
+      0
+    ],
+    [
+      1,
+      0.6,
+      140
+    ],
+    [
+      2.5,
+      1.6,
+      290
+    ],
+    [
+      5,
+      3.2,
+      450
+    ],
+    [
+      8,
+      5.2,
+      570
+    ],
+    [
+      11,
+      7.0,
+      640
+    ],
+    [
+      15,
+      9.4,
+      760
+    ],
+    [
+      20,
+      12.6,
+      900
+    ],
+    [
+      25,
+      16.0,
+      1050
+    ]
+  ],
+  "vehicle": {
+    "name": "reference vehicle",
+    "triboelectric_exemption": "4.1.10.2b",
+    "triboelectric_basis": "vehicle electrostatic discharge analysis on file"
+  },
+  "overrides": [
+    {
+      "object_id": "ly1",
+      "cloud_type": "detached_anvil",
+      "original_type": "thick_layer",
+      "issued_at": "2026-09-04T21:09:00",
+      "issued_by": "LWO/AR",
+      "justification": "Fibrous texture and downwind position from cell1 are anvil, not stratiform. Bright band absent. Tracker split it from the layer field at 20:40Z.",
+      "facts": {
+        "detachment_time": "2026-09-04T20:40:00",
+        "parent_coldest_top_temp_c": -32.0
+      },
+      "ttl_seconds": 3600
+    }
+  ]
+}

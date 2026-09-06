@@ -1,0 +1,509 @@
+{
+  "schema": "llcc-1",
+  "kind": "snapshot",
+  "time": "2026-09-04T21:40:30",
+  "pad": "LC-39A",
+  "azimuth_deg": 45.0,
+  "field_mills_available": false,
+  "vehicle": {
+    "name": "reference vehicle",
+    "triboelectric_exemption": "4.1.10.2b",
+    "triboelectric_basis": "vehicle electrostatic discharge analysis on file"
+  },
+  "profile": {
+    "uncertainty_m": 300.0,
+    "levels": [
+      [
+        0.0,
+        29.0
+      ],
+      [
+        1000.0,
+        22.0
+      ],
+      [
+        2000.0,
+        15.5
+      ],
+      [
+        3000.0,
+        9.0
+      ],
+      [
+        3600.0,
+        5.0
+      ],
+      [
+        4600.0,
+        0.0
+      ],
+      [
+        5600.0,
+        -5.0
+      ],
+      [
+        6600.0,
+        -10.0
+      ],
+      [
+        7600.0,
+        -15.0
+      ],
+      [
+        8700.0,
+        -20.0
+      ],
+      [
+        10000.0,
+        -33.0
+      ],
+      [
+        12000.0,
+        -52.0
+      ],
+      [
+        14000.0,
+        -68.0
+      ],
+      [
+        16000.0,
+        -80.0
+      ]
+    ],
+    "isotherms": {
+      "5": 3600.0,
+      "0": 4600.0,
+      "-5": 5600.0,
+      "-10": 6600.0,
+      "-15": 7600.0,
+      "-20": 8700.0
+    }
+  },
+  "objects": {
+    "DOMAIN": {
+      "id": "DOMAIN",
+      "cloud_type": "unclassified",
+      "parent_ids": [],
+      "first_seen": null,
+      "unknown_provenance": false,
+      "observability": 1.0,
+      "slant_min_nmi": null,
+      "horiz_min_nmi": null,
+      "intersects_corridor": null,
+      "top_temp_c": null,
+      "coldest_top_temp_c": null,
+      "parent_coldest_top_temp_c": null,
+      "top_colder_than_0c_last_3h": null,
+      "top_colder_than_5c_last_3h": null,
+      "refl_above_10dbz_last_3h": null,
+      "will_grow_colder_than_0c": null,
+      "will_grow_colder_than_5c": null,
+      "portion_within_5nmi_all_below_0c": null,
+      "portion_within_10nmi_all_below_0c": null,
+      "entirely_colder_than_15c": null,
+      "contains_liquid_water": null,
+      "ever_connected_to_convection": null,
+      "mrr_max_within_1nmi_dbz": null,
+      "mrr_max_in_corridor_dbz": null,
+      "mrr_valid": null,
+      "layer_thickness_m": null,
+      "layer_spans_0_to_minus20": null,
+      "refl_0dbz_within_5nmi": null,
+      "mrr_ge_7p5_within_2nmi_last_hour": null,
+      "producing_precip": null,
+      "moderate_precip_within_5nmi": null,
+      "bright_band_within_5nmi": null,
+      "associated_with_disturbed_weather": null,
+      "tops_colder_than_0c_in_system": null,
+      "corridor_penetrates_below_minus10c": true,
+      "velocity_at_penetration_ms": 640.0,
+      "attached_to_smoke_plume": null,
+      "is_thunderstorm": null,
+      "parent_had_part_colder_than_minus20": null,
+      "formed_by_thunderstorm": null,
+      "overridden_by": null,
+      "override_original_type": null,
+      "bearing_deg": null,
+      "range_nmi": null,
+      "radius_nmi": null,
+      "base_alt_km": null,
+      "top_alt_km": null,
+      "downrange_nmi": null,
+      "producing_cloud_beyond_10nmi": false
+    },
+    "cu1": {
+      "id": "cu1",
+      "cloud_type": "cumulus",
+      "parent_ids": [],
+      "first_seen": null,
+      "unknown_provenance": false,
+      "observability": 1.0,
+      "slant_min_nmi": 4.3,
+      "horiz_min_nmi": 4.1,
+      "intersects_corridor": false,
+      "top_temp_c": -6.0,
+      "coldest_top_temp_c": -12.0,
+      "parent_coldest_top_temp_c": null,
+      "top_colder_than_0c_last_3h": null,
+      "top_colder_than_5c_last_3h": null,
+      "refl_above_10dbz_last_3h": null,
+      "will_grow_colder_than_0c": null,
+      "will_grow_colder_than_5c": null,
+      "portion_within_5nmi_all_below_0c": null,
+      "portion_within_10nmi_all_below_0c": null,
+      "entirely_colder_than_15c": null,
+      "contains_liquid_water": null,
+      "ever_connected_to_convection": null,
+      "mrr_max_within_1nmi_dbz": null,
+      "mrr_max_in_corridor_dbz": null,
+      "mrr_valid": true,
+      "layer_thickness_m": null,
+      "layer_spans_0_to_minus20": null,
+      "refl_0dbz_within_5nmi": null,
+      "mrr_ge_7p5_within_2nmi_last_hour": null,
+      "producing_precip": null,
+      "moderate_precip_within_5nmi": null,
+      "bright_band_within_5nmi": null,
+      "associated_with_disturbed_weather": null,
+      "tops_colder_than_0c_in_system": null,
+      "corridor_penetrates_below_minus10c": null,
+      "velocity_at_penetration_ms": null,
+      "attached_to_smoke_plume": null,
+      "is_thunderstorm": null,
+      "parent_had_part_colder_than_minus20": null,
+      "formed_by_thunderstorm": null,
+      "overridden_by": null,
+      "override_original_type": null,
+      "bearing_deg": 18.0,
+      "range_nmi": 5.6,
+      "radius_nmi": 1.3,
+      "base_alt_km": 1.0,
+      "top_alt_km": 7.0,
+      "downrange_nmi": 5.0,
+      "producing_cloud_beyond_10nmi": null
+    },
+    "cell1": {
+      "id": "cell1",
+      "cloud_type": "cumulus",
+      "parent_ids": [],
+      "first_seen": null,
+      "unknown_provenance": false,
+      "observability": 1.0,
+      "slant_min_nmi": 9.0,
+      "horiz_min_nmi": 8.6,
+      "intersects_corridor": false,
+      "top_temp_c": -21.0,
+      "coldest_top_temp_c": -34.0,
+      "parent_coldest_top_temp_c": null,
+      "top_colder_than_0c_last_3h": null,
+      "top_colder_than_5c_last_3h": null,
+      "refl_above_10dbz_last_3h": null,
+      "will_grow_colder_than_0c": null,
+      "will_grow_colder_than_5c": null,
+      "portion_within_5nmi_all_below_0c": null,
+      "portion_within_10nmi_all_below_0c": null,
+      "entirely_colder_than_15c": null,
+      "contains_liquid_water": null,
+      "ever_connected_to_convection": null,
+      "mrr_max_within_1nmi_dbz": null,
+      "mrr_max_in_corridor_dbz": null,
+      "mrr_valid": true,
+      "layer_thickness_m": null,
+      "layer_spans_0_to_minus20": null,
+      "refl_0dbz_within_5nmi": null,
+      "mrr_ge_7p5_within_2nmi_last_hour": null,
+      "producing_precip": null,
+      "moderate_precip_within_5nmi": null,
+      "bright_band_within_5nmi": null,
+      "associated_with_disturbed_weather": null,
+      "tops_colder_than_0c_in_system": null,
+      "corridor_penetrates_below_minus10c": null,
+      "velocity_at_penetration_ms": null,
+      "attached_to_smoke_plume": null,
+      "is_thunderstorm": true,
+      "parent_had_part_colder_than_minus20": null,
+      "formed_by_thunderstorm": null,
+      "overridden_by": null,
+      "override_original_type": null,
+      "bearing_deg": 76.0,
+      "range_nmi": 10.6,
+      "radius_nmi": 2.5,
+      "base_alt_km": 0.8,
+      "top_alt_km": 10.2,
+      "downrange_nmi": 10.0,
+      "producing_cloud_beyond_10nmi": null
+    },
+    "av1": {
+      "id": "av1",
+      "cloud_type": "detached_anvil",
+      "parent_ids": [
+        "cell1"
+      ],
+      "first_seen": null,
+      "unknown_provenance": false,
+      "observability": 1.0,
+      "slant_min_nmi": 6.2,
+      "horiz_min_nmi": 6.0,
+      "intersects_corridor": false,
+      "top_temp_c": null,
+      "coldest_top_temp_c": null,
+      "parent_coldest_top_temp_c": -34.0,
+      "top_colder_than_0c_last_3h": null,
+      "top_colder_than_5c_last_3h": null,
+      "refl_above_10dbz_last_3h": null,
+      "will_grow_colder_than_0c": null,
+      "will_grow_colder_than_5c": null,
+      "portion_within_5nmi_all_below_0c": false,
+      "portion_within_10nmi_all_below_0c": true,
+      "entirely_colder_than_15c": null,
+      "contains_liquid_water": null,
+      "ever_connected_to_convection": null,
+      "mrr_max_within_1nmi_dbz": null,
+      "mrr_max_in_corridor_dbz": null,
+      "mrr_valid": true,
+      "layer_thickness_m": null,
+      "layer_spans_0_to_minus20": null,
+      "refl_0dbz_within_5nmi": null,
+      "mrr_ge_7p5_within_2nmi_last_hour": null,
+      "producing_precip": null,
+      "moderate_precip_within_5nmi": null,
+      "bright_band_within_5nmi": null,
+      "associated_with_disturbed_weather": null,
+      "tops_colder_than_0c_in_system": null,
+      "corridor_penetrates_below_minus10c": null,
+      "velocity_at_penetration_ms": null,
+      "attached_to_smoke_plume": null,
+      "is_thunderstorm": false,
+      "parent_had_part_colder_than_minus20": null,
+      "formed_by_thunderstorm": null,
+      "overridden_by": null,
+      "override_original_type": null,
+      "bearing_deg": 62.0,
+      "range_nmi": 8.4,
+      "radius_nmi": 3.6,
+      "base_alt_km": 8.0,
+      "top_alt_km": 11.0,
+      "downrange_nmi": 8.0,
+      "producing_cloud_beyond_10nmi": null
+    },
+    "ly1": {
+      "id": "ly1",
+      "cloud_type": "detached_anvil",
+      "parent_ids": [],
+      "first_seen": null,
+      "unknown_provenance": false,
+      "observability": 0.6,
+      "slant_min_nmi": 0.0,
+      "horiz_min_nmi": 0.0,
+      "intersects_corridor": true,
+      "top_temp_c": null,
+      "coldest_top_temp_c": null,
+      "parent_coldest_top_temp_c": -32.0,
+      "top_colder_than_0c_last_3h": null,
+      "top_colder_than_5c_last_3h": null,
+      "refl_above_10dbz_last_3h": null,
+      "will_grow_colder_than_0c": null,
+      "will_grow_colder_than_5c": null,
+      "portion_within_5nmi_all_below_0c": null,
+      "portion_within_10nmi_all_below_0c": null,
+      "entirely_colder_than_15c": null,
+      "contains_liquid_water": null,
+      "ever_connected_to_convection": false,
+      "mrr_max_within_1nmi_dbz": null,
+      "mrr_max_in_corridor_dbz": null,
+      "mrr_valid": null,
+      "layer_thickness_m": 1900.0,
+      "layer_spans_0_to_minus20": true,
+      "refl_0dbz_within_5nmi": true,
+      "mrr_ge_7p5_within_2nmi_last_hour": null,
+      "producing_precip": null,
+      "moderate_precip_within_5nmi": null,
+      "bright_band_within_5nmi": null,
+      "associated_with_disturbed_weather": null,
+      "tops_colder_than_0c_in_system": null,
+      "corridor_penetrates_below_minus10c": null,
+      "velocity_at_penetration_ms": null,
+      "attached_to_smoke_plume": null,
+      "is_thunderstorm": false,
+      "parent_had_part_colder_than_minus20": null,
+      "formed_by_thunderstorm": null,
+      "overridden_by": "LWO/AR",
+      "override_original_type": "thick_layer",
+      "bearing_deg": 45.0,
+      "range_nmi": 12.0,
+      "radius_nmi": 6.5,
+      "base_alt_km": 3.2,
+      "top_alt_km": 5.1,
+      "downrange_nmi": 12.0,
+      "producing_cloud_beyond_10nmi": null
+    },
+    "db1": {
+      "id": "db1",
+      "cloud_type": "debris",
+      "parent_ids": [
+        "cell1"
+      ],
+      "first_seen": null,
+      "unknown_provenance": false,
+      "observability": 1.0,
+      "slant_min_nmi": 2.4,
+      "horiz_min_nmi": 2.3,
+      "intersects_corridor": false,
+      "top_temp_c": null,
+      "coldest_top_temp_c": null,
+      "parent_coldest_top_temp_c": null,
+      "top_colder_than_0c_last_3h": null,
+      "top_colder_than_5c_last_3h": null,
+      "refl_above_10dbz_last_3h": null,
+      "will_grow_colder_than_0c": null,
+      "will_grow_colder_than_5c": null,
+      "portion_within_5nmi_all_below_0c": false,
+      "portion_within_10nmi_all_below_0c": null,
+      "entirely_colder_than_15c": null,
+      "contains_liquid_water": null,
+      "ever_connected_to_convection": null,
+      "mrr_max_within_1nmi_dbz": 14.0,
+      "mrr_max_in_corridor_dbz": null,
+      "mrr_valid": true,
+      "layer_thickness_m": null,
+      "layer_spans_0_to_minus20": null,
+      "refl_0dbz_within_5nmi": null,
+      "mrr_ge_7p5_within_2nmi_last_hour": null,
+      "producing_precip": null,
+      "moderate_precip_within_5nmi": null,
+      "bright_band_within_5nmi": null,
+      "associated_with_disturbed_weather": null,
+      "tops_colder_than_0c_in_system": null,
+      "corridor_penetrates_below_minus10c": null,
+      "velocity_at_penetration_ms": null,
+      "attached_to_smoke_plume": null,
+      "is_thunderstorm": false,
+      "parent_had_part_colder_than_minus20": true,
+      "formed_by_thunderstorm": true,
+      "overridden_by": null,
+      "override_original_type": null,
+      "bearing_deg": 68.0,
+      "range_nmi": 3.4,
+      "radius_nmi": 1.8,
+      "base_alt_km": 1.2,
+      "top_alt_km": 6.4,
+      "downrange_nmi": 3.2,
+      "producing_cloud_beyond_10nmi": null
+    }
+  },
+  "connections": [],
+  "events": [
+    {
+      "kind": "detachment",
+      "time": "2026-09-04T20:40:00",
+      "object_id": "ly1",
+      "source": "override:LWO/AR",
+      "detail": {}
+    },
+    {
+      "kind": "lightning",
+      "time": "2026-09-04T21:04:12",
+      "object_id": "cell1",
+      "source": "GLM-19",
+      "detail": {
+        "distance_nmi": 8.2,
+        "footprint_km2": 340
+      }
+    },
+    {
+      "kind": "detachment",
+      "time": "2026-09-04T21:22:00",
+      "object_id": "av1",
+      "source": "tracker",
+      "detail": {}
+    },
+    {
+      "kind": "parent_top_collapse",
+      "time": "2026-09-04T21:33:00",
+      "object_id": "db1",
+      "source": "tracker",
+      "detail": {
+        "parent": "cell1",
+        "collapsed_to_temp_c": -8.0
+      }
+    }
+  ],
+  "radar": {
+    "valid_time": "2026-09-04T21:40:30",
+    "source": "KMLB Level II (synthetic)",
+    "plan_mode": "composite",
+    "plan_level_km": null,
+    "plan": {
+      "kind": "plan",
+      "nx": 128,
+      "ny": 128,
+      "extent": {
+        "half_nmi": 26.0
+      },
+      "encoding": "base64-int8-dbz",
+      "unobservable": -128,
+      "no_echo": -127,
+      "data": "gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH5+fn5+fn5+fn5+fn5gYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH5+fn5+fr6+vr6+vr6+fn5+fmBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH5+fn5+vr6+vr6+vr6+vr6+vr5+fn5gYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH5+fn6+vr6+/v7+/v7+/v7+/v6+vr6+fn5gYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fn5+vr6+/v7+/z8/Pz8/Pz8+/v7+/r6+vn5+YGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfn5+vr6+/v7/Pz8/P39/f39/fz8/Pz7+/v6+vn5+YGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH5+fr6+vv7/Pz8/f39/f7+/v79/f39/Pz8+/v6+vr5+YGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fn6+vv7+/z8/f3+/v7+//////7+/v79/fz8+/v6+vr5+YGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfn5+vr7+/z8/f3+/v////8AAAAA/////v7+/f38+/v6+vn5gYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fn6+vv8/P39/v//AAAAAQEBAQEAAAD///7+/f38+/v6+vn5gYGBgYGBgYGBgYGBgYCAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfn5+vr7/Pz9/f7//wAAAQECAgICAgIBAQAA///+/f38+/v6+vn5gYGBgYGBgYGBgYGBgYGAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fr6+/v8/f3+/wAAAQECAgMDAwMDAwICAQEA///+/f38+/v6+fmBgYGBgYGBgYGBgYGBgYGAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfn5+vr7/Pz9/v8AAAECAgMEBAQEBAQEAwMCAgEA///+/fz8+/r6+fmBgYGBgYGBgYGBgYGBgYGAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fr6+/v8/f7//wABAgMDBAUFBQUFBQUFBAMDAgEA//7+/fz7+/r5+YGBgYGBgYGBgYGBgYGBgYGAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfn5+vr7/P39/v8AAQIDBAQFBgYGBwcGBgYFBAMDAgEA//79/Pz7+vr5gYGBgYGBgYGBgYGBgYGBgYGAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fn6+/v8/f7/AAECAwQEBQYHBwgICAgHBwYFBAMCAQD//v79/Pv6+vn5gYGBgYGBgYGBgYGBgYGBgYGBgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH5+vr7/Pz9/v8AAQIDBAUGBwgICQkJCQgHBwYFBAMCAQD//v38+/v6+fmBgYGBgYGBgYGBgYGBgYGBgYGBgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfn6+vv8/f3+/wACAwQFBgcICAkJCgoJCQgHBwYFAwIBAP/+/fz8+/r6+YGBgYGBgYGBgYGBgYGBgYGBgYGBgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH5+fr6+/z9/v8AAQIDBAUGBwgJCgoKCgoKCQgHBgUEAwIA//79/fz7+vr5gYGBgYGBgYGBgYGBgYGBgYGBgYGBgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfn5+vv7/P3+/wABAgMEBgcICQoKCwsLCwoJCQgGBQQDAgEA//79/Pv6+vmBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fn6+/v8/f7/AAECAwUGBwgJCgsLDAwLCgoJCAcFBAMCAQD//v38+/r6+YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH5+fr7+/z9/v8AAQIDBQYHCAkKCwsMDAsKCgkIBwUEAwIBAP/+/fz7+vr5gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfn5+vv7/P3+/wABAgMEBgcICQoKCwsLCwoJCQgGBQQDAgEA//79/Pv6+vmBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fn6+vv8/f7/AAECAwQFBgcICQoKCwsKCgkIBwYFBAMCAf/+/f38+/r6+YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fr6+/z9/v7/AQIDBAUGBwgJCQoKCgoJCAgHBgUEAgEA//79/Pz7+vr5gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH5+v4AAf/9/v8AAQIDBAUGBwgICQkJCQgIBwYFBAMCAQD//v38+/v6+fmBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfn/Bg0OCgL+/wABAgMEBQUGBwcICAgIBwcGBQQDAgEAAP/+/fz7+/r5+YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB/AURHB8XCwD+/wABAgMEBQUGBgcHBwcGBgUEBAMCAQD//v38/Pv6+vn5gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH+CBgnLCEQA/7/AAABAgMEBgYGBgYGBgUFBAQDAgEA///+/fz7+/r5+YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgf4IFyYqIA8C/f7/AAEDBQYHCAgIBwUEBAQDAwIBAAD//v38/Pv6+vn5gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB/AMOGRsUCf/9/v4AAgQGBwkKCgkIBwUHCQoJBwQB//79/fz7+/r6+YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB/gQJCwcB/Pz9/gACBAYICgsLCgkHCw8REhANCQUB/f38+/v6+vn5gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB/P///vv7/P3+AAIEBggKCwwLCQsRFhobGRUPCQT//Pz7+vr5+YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fn6+vv7/P4AAgQGCAkLCwoJEBceIiMhHBUNBwH9+/v6+vn5gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+/z+//79/v8BAwUHCAkJCQsUHCQpKichGRAJAv77+vr5+YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfv9AAMEBAL//wACBAUHBwgHDRUeJiwuKiMbEgoD/vv6+fmBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH6/QAFCQsKBwP+/wECBAUFBgUMFB0lKiwpIhoRCQP++/n5gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfv+AwkOERAMBgH+AAECAwMDBAoSGSAlJiQeFw8IAv35+YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+/8FCxEVFA8IAv3+/wABAQECBw0UGR0eHBcRCwUA/PmBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH7/wQLERQTDggC/f3+/v////8DCA0SFBUUEAsGAv77gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfr+AwgNDw4LBQD8+/z9/f39/QADBwoMDQsJBgL//IGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+fwABAcJCAUC/vv6+/v8/Pz8/f8CBAUFBQMB/vyBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+v3/AQMCAP77+fn6+vr6+/r6/P3/AAD//v37gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB+vz9/v38+/mBgfn5+fn5+fn5+vv8/Pz7gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgfr6+vmBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgQ=="
+    },
+    "xsec": {
+      "kind": "xsec",
+      "nx": 128,
+      "ny": 72,
+      "extent": {
+        "max_nmi": 25.0,
+        "max_km": 18.0
+      },
+      "encoding": "base64-int8-dbz",
+      "unobservable": -128,
+      "no_echo": -127,
+      "data": "gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgP38gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgAkHBQMCAP+BgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA4LCQcFBAIB/4GBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgBMRDwwKCAYEAgH/gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgBgWFBIQDQsJBwUDAQCBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgB0bGhgVExEODAkHBQMCAIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCAfHh0bGRcUEg8NCggGBAIAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCAhIiEgHhwaGBUTEA0LCAYEAgGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAHR8hIiMjIiEgHhsZFhQRDgsJBwQDAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAGRweICIjJCUkIyEfHRoXFRIPDAkHBQMBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAFBcaHR8iIyUmJiUkIiAeGxgVEg8NCgcFAwGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICADxIVGBseISMlJicnJyUkIR8cGRYTEA0KCAYDAoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICACg0QExYZHB8iJCYnKCkoJyUjIB0aFxQRDgsIBgQCgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICABQgKDRATFhodICMlJygpKikoJiQhHhsYFBEOCwkGBAKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgQMFCAsNEBQXGh4hIyYoKSorKiknJCIfHBgVEg8MCQYEAoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICABAGBAwYICw4RFBgbHiEkJykqKywrKSglIx8cGRYSDwwJBwQCgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICADQkFAYEEBggLDhEVGBsfIiUnKSssLCwqKCYjIB0ZFhMPDAkHBAKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAGBMOCgYCgQQGCAsOEhUYHB8iJSgqLC0tLCspJiQhHRoWExAMCgcFAoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAIR4aFRALBgKBBAYJCw4SFRkcICMmKCosLS0tKyknJCEeGhcTEA0KBwUDgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAIyQjIBwXEQwHA4EEBgkMDxIVGRwgIyYpKywtLi0sKickIR4aFxMQDQoHBQOBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAHCElJiUi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AwUHCgwPEhQXGRweHyAhIiEgHhwaGBUTEA0LCAYEAgGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB/f8AAgQGCAkLDQ4PEA8ODQ8UGR0gIiEeGhUQCwYCgQEDBQcJDA4RExYYGhweHyAgHx4dGxkXFBIPDQoIBgQCAIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYH9/gABAwUHCAoMDQ4ODg0LDRIXGx4fHhwYEw4KBgKBAQMEBgkLDRASFBcZGxwdHh4eHRsaGBUTEQ4MCQcFAwIAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgf3+/wECBAYHCQoMDA0MCwoMERUZGx0cGRYRDQkFAYEBAgQGCAoMDxETFRcZGxwdHRwbGhgWFBIQDQsJBwUDAQCBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB/f7/AAIDBQYICQoLDAsKCQsPExYZGhkXFBAMCAQBgQACAwUHCQsOEBIUFhgZGhsbGxoYFxUTEQ8MCggGBAIB/4GBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBAAMGCQ0RFBYYFxUSDgoHAwCBAAEDBQcJCw0PERMVFhgZGRkZGBcVFBIQDgsJBwUEAgH/gYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYEAAQMEBggKDA4QEhMVFhcYGBcWFRQSEA4NCwkHBQMCAP+BgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGB"
+    }
+  },
+  "trajectory": [
+    [
+      0,
+      0.0,
+      0
+    ],
+    [
+      1,
+      0.6,
+      140
+    ],
+    [
+      2.5,
+      1.6,
+      290
+    ],
+    [
+      5,
+      3.2,
+      450
+    ],
+    [
+      8,
+      5.2,
+      570
+    ],
+    [
+      11,
+      7.0,
+      640
+    ],
+    [
+      15,
+      9.4,
+      760
+    ],
+    [
+      20,
+      12.6,
+      900
+    ],
+    [
+      25,
+      16.0,
+      1050
+    ]
+  ]
+}

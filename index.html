@@ -288,8 +288,13 @@ function rasterURL(r, showBelow) {
 // Web Mercator tile maths. Each tile is placed by its own corners rather
 // than by one global transform, which absorbs the small difference between
 // Mercator and the flat-earth ENU frame over this extent.
-const TILE_URL = "https://basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png";
-const TILE_ATTRIB = "Map \u00A9 OpenStreetMap contributors, \u00A9 CARTO";
+// Esri's dark canvas: keyless, and dark enough that reflectivity reads over
+// it. CARTO's basemaps now require an API key and watermark the tiles
+// without one.
+const TILE_URL = "https://services.arcgisonline.com/ArcGIS/rest/services/"
+  + "Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+const TILE_ATTRIB = "Map \u00A9 Esri, HERE, Garmin, \u00A9 OpenStreetMap "
+  + "contributors";
 
 const lon2tile = (lon, z) => (lon + 180) / 360 * Math.pow(2, z);
 const lat2tile = (lat, z) => {
@@ -332,6 +337,7 @@ function drawTiles(svg, snap, PAD, PX, half) {
       if (px > 700 || py > 460 || px + w < 0 || py + h < 0) continue;
       g.append(el("image", {
         href: TILE_URL.replace("{z}", z).replace("{x}", x).replace("{y}", y),
+        onerror: "this.remove()",
         x: px, y: py, width: w, height: h, preserveAspectRatio: "none"
       }));
     }

@@ -19,7 +19,10 @@ from ..geometry import Grid
 from .beam import meteorological_mask, observability_mask
 from .s3 import download, list_keys, nexrad_prefix
 
-BUCKET = "noaa-nexrad-level2"
+# Renamed from noaa-nexrad-level2 in July 2025 at the request of the AWS
+# Open Datasets team. Filename pattern and data format are unchanged;
+# updates to the legacy bucket stopped on 1 September 2025.
+BUCKET = "unidata-nexrad-level2"
 # KMLB, Melbourne FL. Antenna at about 11 m MSL.
 KMLB = {"lat": 28.1131, "lon": -80.6544, "alt_m": 11.0}
 
@@ -57,7 +60,13 @@ def nearest_key(site: str, when: datetime, window_min: float = 15.0) -> str | No
 
 def grid_scan(radar, grid: Grid, radar_east: float = 0.0,
               radar_north: float = 0.0, radar_alt_m: float = 0.0,
-              rho_min: float = 0.85) -> Scan:
+              rho_min: float = 0.85,
+              rho_min_surface: float = 0.93,
+              texture_max_deg: float = 12.0,
+              roi_nb: float = 0.7,
+              roi_min_radius_m: float = 1000.0,
+              freezing_level_m: float | None = None,
+              verbose: bool = True) -> Scan:
     """UNVERIFIED: needs Py-ART. Grid one radar volume onto the ENU grid.
 
     Dual-pol QC runs on the polar gates before gridding, because filtering
@@ -69,15 +78,52 @@ def grid_scan(radar, grid: Grid, radar_east: float = 0.0,
     fields = radar.fields
     dual = "cross_correlation_ratio" in fields and "differential_reflectivity" in fields
 
+    def pull(name):
+        f = fields.get(name)
+        return None if f is None else np.ma.filled(f["data"], np.nan)
+
     refl = fields["reflectivity"]["data"]
-    rho = fields.get("cross_correlation_ratio", {}).get("data") if dual else None
-    zdr = fields.get("differential_reflectivity", {}).get("data") if dual else None
-    keep = meteorological_mask(np.ma.filled(refl, np.nan),
-                               None if rho is None else np.ma.filled(rho, np.nan),
-                               None if zdr is None else np.ma.filled(zdr, np.nan),
-                               rho_min=rho_min)
+    heights = None
+    if "gate_altitude" in dir(radar) and radar.gate_altitude is not None:
+        heights = np.asarray(radar.gate_altitude["data"], dtype=float)
+
+    report: dict = {}
+    keep = meteorological_mask(
+        np.ma.filled(refl, np.nan),
+        rho_hv=pull("cross_correlation_ratio"),
+        zdr=pull("differential_reflectivity"),
+        phidp=pull("differential_phase"),
+        velocity=pull("velocity"),
+        heights_m=heights,
+        radar_alt_m=radar_alt_m,
+        freezing_level_m=freezing_level_m,
+        rho_min=rho_min,
+        rho_min_surface=rho_min_surface,
+        texture_max_deg=texture_max_deg,
+        report=report,
+    )
+    if verbose and report:
+        total = report.get("total", 1)
+        parts = [f"{k}={v}" for k, v in report.items()
+                 if k not in ("total", "kept")]
+        print(f"    QC kept {report.get('kept', 0)}/{total} gates "
+              f"({report.get('kept', 0) / max(total, 1):.1%})  " + " ".join(parts))
     radar.add_field_like("reflectivity", "refl_qc",
                          np.ma.masked_where(~keep, refl), replace_existing=True)
+
+    # A coverage field carrying 1.0 wherever a QC-passed gate exists. Gridded
+    # alongside the reflectivity, it tells us which grid cells any gate
+    # actually reached.
+    #
+    # This is not belt-and-braces. Py-ART can return ungridded cells as 0.0
+    # rather than masked, and 0 dBZ is exactly the standard's cloud
+    # threshold -- so every unsampled cell in the domain reads as cloud, and
+    # the segmentation produces one enormous spurious object. Inferring
+    # coverage from the reflectivity values themselves cannot work, because
+    # 0 dBZ is both a legitimate measurement and the fill value.
+    radar.add_field_like("reflectivity", "coverage",
+                         np.ma.masked_where(~keep, np.ones_like(np.asarray(refl))),
+                         replace_existing=True)
 
     half_x = grid.nx * grid.dx / 2.0
     half_y = grid.ny * grid.dy / 2.0
@@ -87,18 +133,49 @@ def grid_scan(radar, grid: Grid, radar_east: float = 0.0,
         (radar,),
         grid_shape=(grid.nz, grid.ny, grid.nx),
         grid_limits=((grid.z0, top), (-half_y, half_y), (-half_x, half_x)),
-        fields=["refl_qc"],
+        fields=["refl_qc", "coverage"],
+        # Without this Py-ART centres the grid on the RADAR, not on the pad,
+        # so the reflectivity would sit 55 km from everything else in the
+        # system -- the corridor, both distance fields, and the map tiles are
+        # all in a pad-centred ENU frame. Every distance would be measured
+        # from the wrong origin.
+        grid_origin=(grid.origin_lat, grid.origin_lon),
+        grid_origin_alt=grid.z0,
         weighting_function="Barnes2",
-        # Radius of influence must grow with range or the gaps between tilts
-        # slice a continuous cloud into disconnected slabs, which corrupts
-        # the connectivity the whole segmentation rests on.
+        # The radius of influence has to grow with range or the gaps between
+        # tilts slice a continuous cloud into disconnected slabs, which
+        # corrupts the connectivity the segmentation rests on. But it must
+        # not grow far: Barnes weighting smears every surviving gate across
+        # the whole radius and interpolates between them, so a scatter of
+        # isolated returns becomes a continuous low-dBZ haze -- and since the
+        # standard's cloud boundary is 0 dBZ, that haze becomes cloud. A
+        # single spurious object tens of miles across is the result.
+        #
+        # nb below Py-ART's 1.5 default tightens the beam-width term.
         roi_func="dist_beam",
-        min_radius=max(grid.dx, grid.dz),
+        nb=roi_nb,
+        min_radius=roi_min_radius_m,
     )
 
-    data = np.asarray(gridded.fields["refl_qc"]["data"])
-    data = np.ma.filled(data, np.nan)
-    refl_grid = np.transpose(data, (2, 1, 0))     # (z,y,x) -> (x,y,z)
+    def unpack(name):
+        raw = gridded.fields[name]["data"]
+        arr = (np.ma.filled(raw.astype(float), np.nan)
+               if np.ma.isMaskedArray(raw) else np.asarray(raw, dtype=float))
+        return np.transpose(arr, (2, 1, 0))       # (z,y,x) -> (x,y,z)
+
+    refl_grid = unpack("refl_qc")
+    coverage = unpack("coverage")
+    sampled = np.isfinite(coverage) & (coverage > 0.05)
+    refl_grid = np.where(sampled, refl_grid, np.nan)
+
+    if verbose:
+        cells = refl_grid.size
+        finite = np.isfinite(refl_grid)
+        cloud = finite & (refl_grid >= 0.0)
+        solid = finite & (refl_grid >= 15.0)
+        print(f"    gridded {cells} cells: {finite.sum() / cells:.1%} sampled, "
+              f"{cloud.sum() / cells:.2%} at or above 0 dBZ, "
+              f"{solid.sum() / cells:.2%} at 15 dBZ or more")
 
     observable = observability_mask(grid, radar_east, radar_north, radar_alt_m)
     when = datetime.strptime(radar.time["units"].split("since")[-1].strip(),

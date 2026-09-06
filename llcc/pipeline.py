@@ -19,15 +19,21 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
+import base64
+
 import numpy as np
 
+from dataclasses import asdict as _asdict
+
+from .classify import Thresholds, classify, extract
 from .geometry import (
     NM_TO_M, Corridor, Grid, all_colder_than, corridor_penetrates_colder_than,
     horiz_min, intersects_corridor, layer_thickness, mrr_field,
     mrr_max_in_corridor, mrr_max_within_horiz, mrr_validity, slant_min,
     voxels_within,
 )
-from .segment import PRECIP_DBZ, precipitation_flags, segment_field
+from .segment import (PRECIP_DBZ, bright_band_field,
+                      precipitation_flags, segment_field)
 from .track import Tracker
 from .world import (
     CloudObject, CloudType, Event, EventKind, ThermalProfile, VehicleConfig,
@@ -37,13 +43,13 @@ from .world import (
 THREE_HOURS = timedelta(hours=3)
 
 
-def worst_case_classifier(track, segment, grid, profile) -> str:
-    """Day-one placeholder: assume the most restrictive type.
+def worst_case_classifier(*_args, **_kwargs) -> str:
+    """Assume the most restrictive type, always.
 
-    Cumulus carries the widest standoffs of any type in section 4.1, so
-    labelling everything cumulus is the conservative assumption. It is not a
-    claim about what the cloud is; it is a claim about what we are willing
-    to rule out, which is nothing.
+    Cumulus carries the widest standoffs in section 4.1. Set
+    PipelineConfig.classify=False to fall back to this, which is the honest
+    baseline: it claims nothing about what the cloud is, only that nothing
+    has been ruled out.
     """
     return CloudType.CUMULUS
 
@@ -55,9 +61,26 @@ class PipelineConfig:
     profile: ThermalProfile
     vehicle: VehicleConfig | None = None
     field_mills_available: bool = False
-    classifier: callable = worst_case_classifier
+    classify: bool = True
+    thresholds: Thresholds = field(default_factory=Thresholds)
     pad: str = "LC-39A"
     azimuth_deg: float = 45.0
+    # Smallest thing that counts as a cloud. Real fields carry residual
+    # clutter and isolated gates through polarimetric QC; without a floor
+    # every speck becomes an object with its own standoff and lineage.
+    min_voxels: int = 24
+    min_footprint_cells: int = 6
+    min_neighbours: int = 7
+    # Section 3.2 defines disturbed weather as a dynamically driven system --
+    # fronts, troughs, squall lines, tropical waves -- and explicitly excludes
+    # sea-breeze convergence, frictional convergence and outflow boundaries.
+    # Radar cannot make that call, so it is declared, like the 4.1.10.2
+    # exemption. Defaults to False because the great majority of Cape
+    # convection is sea-breeze driven, and a permanently indeterminate
+    # criterion trains people to ignore the panel. The declaration is shown
+    # on the display so it reads as an assumption someone made rather than
+    # as something that was measured.
+    disturbed_weather: bool | None = False
 
 
 @dataclass
@@ -66,6 +89,28 @@ class Pipeline:
     tracker: Tracker = field(default_factory=Tracker)
     events: list[Event] = field(default_factory=list)
     _flashed: set[str] = field(default_factory=set)
+    _overlay: dict = field(default_factory=dict)
+    _features: dict = field(default_factory=dict)
+
+    def classifier_state(self) -> dict:
+        """Thresholds used and the features each object was judged on.
+
+        Shipping both lets the display re-run the classification for a
+        what-if, without the display having to invent numbers the server
+        never saw.
+        """
+        return {"thresholds": _asdict(self.config.thresholds),
+                "features": self._features}
+
+    def overlay(self) -> dict:
+        """Per-column object map for the display.
+
+        Objects are drawn from their actual footprint rather than as a disc of
+        equivalent area. A sprawling object and a compact one of the same area
+        look identical as circles, and the standoff ring drawn around the
+        circle sits nowhere near the cloud it is supposed to bound.
+        """
+        return self._overlay
 
     def _temp_at(self, altitude_m: float):
         return self.config.profile.temp_at(altitude_m)
@@ -114,7 +159,11 @@ class Pipeline:
         cfg = self.config
         grid, corridor = cfg.grid, cfg.corridor
 
-        segmentation = segment_field(refl, grid, observable)
+        segmentation = segment_field(
+            refl, grid, observable,
+            min_voxels=cfg.min_voxels,
+            min_footprint_cells=cfg.min_footprint_cells,
+            min_neighbours=cfg.min_neighbours)
         mapping, track_events = self.tracker.update(
             segmentation, refl, grid, when, self._temp_at, observable)
 
@@ -136,6 +185,17 @@ class Pipeline:
         zm15 = self._isotherm(-15.0)
 
         mrr = mrr_field(refl, grid, z0c if z0c is not None else 0.0)
+        bright = bright_band_field(refl, grid, z0c)
+
+        # LLCCR 21 asks whether the *system* includes tops colder than 0 C,
+        # so it is answered over the physically connected cluster, not over
+        # the single object.
+        cluster_cold: dict[int, bool] = {}
+        for lab, seg in segmentation.segments.items():
+            t = self._temp_at(seg.top_altitude(grid))
+            if t is not None and t < 0.0:
+                cluster_cold[seg.component] = True
+            cluster_cold.setdefault(seg.component, False)
         recent = [
             (e.detail.get("east", 0.0), e.detail.get("north", 0.0))
             for e in self.events
@@ -145,6 +205,7 @@ class Pipeline:
         valid = mrr_validity(refl, grid, z0c if z0c is not None else 0.0, recent)
 
         objects: dict[str, CloudObject] = {}
+        self._features = {}
         cloud_all = np.zeros(grid.shape, dtype=bool)
 
         for lab, tid in mapping.items():
@@ -168,9 +229,34 @@ class Pipeline:
             north = (centroid_j - grid.ny / 2 + 0.5) * grid.dy
             az = np.radians(cfg.azimuth_deg)
 
+            if cfg.classify:
+                feats = extract(refl, seg.mask, grid, cfg.profile,
+                                bright_band=bool(bright[seg.mask.any(axis=2)].any()))
+                feats.coldest_top_c = track.coldest_top_c
+                connected_types = [
+                    objects[o].cloud_type for o in objects
+                    if o in {mapping.get(a) for a, b in segmentation.connections
+                             if mapping.get(b) == tid}
+                    | {mapping.get(b) for a, b in segmentation.connections
+                       if mapping.get(a) == tid}
+                ]
+                verdict_ = classify(feats, track, parents, connected_types,
+                                    cfg.thresholds)
+                cloud_type, why = verdict_.cloud_type, verdict_.reason
+                self._features[tid] = {
+                    **_asdict(feats),
+                    "parent_coldest_top_c": min(
+                        (p.coldest_top_c for p in parents
+                         if p.coldest_top_c is not None), default=None),
+                    "detached": track.detached_at is not None,
+                    "connected_types": connected_types,
+                }
+            else:
+                cloud_type, why = worst_case_classifier(), "classification off"
+
             objects[tid] = CloudObject(
                 id=tid,
-                cloud_type=cfg.classifier(track, seg, grid, cfg.profile),
+                cloud_type=cloud_type,
                 parent_ids=list(track.parent_ids),
                 first_seen=track.first_seen,
                 unknown_provenance=track.unknown_provenance,
@@ -204,6 +290,11 @@ class Pipeline:
                     and seg.mask[:, :, grid.level_at(z0c):grid.level_at(zm20)].any()),
                 refl_0dbz_within_5nmi=bool(near5.any()),
 
+                associated_with_disturbed_weather=cfg.disturbed_weather,
+                tops_colder_than_0c_in_system=cluster_cold.get(seg.component),
+                bright_band_within_5nmi=bool(
+                    bright[(corridor.d_horiz <= 5.0 * NM_TO_M)
+                           & seg.mask.any(axis=2)].any()),
                 producing_precip=precip,
                 moderate_precip_within_5nmi=bool(
                     near5.any() and np.nanmax(refl[near5]) >= PRECIP_DBZ),
@@ -222,6 +313,7 @@ class Pipeline:
                 downrange_nmi=float((east * np.sin(az) + north * np.cos(az))
                                     / NM_TO_M),
             )
+            objects[tid].classification_reason = why
 
         penetrates, speed = corridor_penetrates_colder_than(
             grid, corridor, cloud_all, zm10)
@@ -232,6 +324,22 @@ class Pipeline:
             producing_cloud_beyond_10nmi=False,
         )
 
+        # Footprint raster, oriented to match the plan view: rows from north.
+        order = [t for t in objects if t != "DOMAIN"]
+        index = {tid: n for n, tid in enumerate(order[:250], start=1)}
+        fp = np.zeros((grid.nx, grid.ny), dtype=np.uint8)
+        for lab, tid in mapping.items():
+            if tid in index:
+                fp[segmentation.segments[lab].mask.any(axis=2)] = index[tid]
+        flat = bytes(int(fp[i, j]) for j in range(grid.ny - 1, -1, -1)
+                     for i in range(grid.nx))
+        self._overlay = {
+            "nx": grid.nx, "ny": grid.ny,
+            "half_nmi": grid.nx * grid.dx / 2 / NM_TO_M,
+            "order": order[:250],
+            "data": base64.b64encode(flat).decode("ascii"),
+        }
+
         connections = self.tracker.connections(segmentation, mapping)
 
         return WorldSnapshot(
@@ -241,5 +349,6 @@ class Pipeline:
             profile=cfg.profile,
             connections=connections,
             field_mills_available=cfg.field_mills_available,
+            disturbed_weather=cfg.disturbed_weather,
             vehicle=cfg.vehicle,
         )

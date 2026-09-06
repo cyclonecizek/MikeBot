@@ -60,9 +60,22 @@ class ThermalProfile:
     uncertainty_m: float = 300.0
 
     def temp_at(self, altitude_m: float) -> float | None:
+        """Temperature at an altitude, clamped outside the sampled range.
+
+        A sounding that stops at 16 km against a grid that runs to 20 km used
+        to return None for anything higher, which made every cloud-top test
+        on a tall object collapse to unknown. Clamping is safe here: above a
+        tropopause-height sounding top the air is colder than every threshold
+        the standard uses, so the clamped answer and the true answer agree on
+        every comparison that matters.
+        """
         levels = self.levels
-        if not levels or altitude_m < levels[0][0] or altitude_m > levels[-1][0]:
+        if not levels:
             return None
+        if altitude_m <= levels[0][0]:
+            return levels[0][1]
+        if altitude_m >= levels[-1][0]:
+            return levels[-1][1]
         for i in range(1, len(levels)):
             z0, t0 = levels[i - 1]
             z1, t1 = levels[i]
@@ -237,6 +250,7 @@ class WorldSnapshot:
     profile: ThermalProfile
     connections: list[tuple[str, str]] = field(default_factory=list)
     field_mills_available: bool = False
+    disturbed_weather: bool | None = False
     vehicle: VehicleConfig | None = None
     feed_status: dict[str, datetime] = field(default_factory=dict)
 

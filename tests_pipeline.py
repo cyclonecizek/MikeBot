@@ -15,7 +15,7 @@ import numpy as np
 
 from llcc.evaluate import State, evaluate
 from llcc.geometry import Grid, build_corridor
-from llcc.pipeline import Pipeline, PipelineConfig, worst_case_classifier
+from llcc.pipeline import Pipeline, PipelineConfig
 from llcc.serialize import snapshot_to_dict, verdict_to_dict
 from llcc.world import CloudType, EventKind, ThermalProfile, VehicleConfig
 
@@ -60,10 +60,10 @@ CORRIDOR = build_corridor(
     azimuth_deg=45.0, radius_m=1500.0)
 
 
-def fresh(classifier=worst_case_classifier, mills=False) -> Pipeline:
+def fresh(classify=False, mills=False) -> Pipeline:
     return Pipeline(PipelineConfig(
         grid=GRID, corridor=CORRIDOR, profile=PROFILE, vehicle=VEHICLE,
-        field_mills_available=mills, classifier=classifier))
+        field_mills_available=mills, classify=classify))
 
 
 print("a scan becomes a snapshot")

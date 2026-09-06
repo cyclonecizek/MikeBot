@@ -94,12 +94,14 @@
   </div>
 
   <div class="toggles">
+    <label><input type="checkbox" id="map-on" checked> map</label>
     <label><input type="checkbox" id="radar-on" checked> radar</label>
     <label><input type="checkbox" id="show-below"> show below 0 dBZ</label>
     <span>0</span><span class="cbar"></span><span>65 dBZ</span>
     <span id="radar-src"></span>
   </div>
   <div class="scope"><svg id="plan" width="100%" viewBox="0 0 700 460"></svg></div>
+  <div id="attrib" style="font-size:11px;color:var(--muted);margin:-6px 0 12px"></div>
   <div class="scope"><svg id="xsec" width="100%" viewBox="0 0 700 290"></svg></div>
 
   <div class="row" id="timers"></div>
@@ -176,6 +178,62 @@ function rasterURL(r, showBelow) {
   return c.toDataURL();
 }
 
+// Web Mercator tile maths. Each tile is placed by its own corners rather
+// than by one global transform, which absorbs the small difference between
+// Mercator and the flat-earth ENU frame over this extent.
+const TILE_URL = "https://basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png";
+const TILE_ATTRIB = "Map \u00A9 OpenStreetMap contributors, \u00A9 CARTO";
+
+const lon2tile = (lon, z) => (lon + 180) / 360 * Math.pow(2, z);
+const lat2tile = (lat, z) => {
+  const r = lat * Math.PI / 180;
+  return (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * Math.pow(2, z);
+};
+const tile2lon = (x, z) => x / Math.pow(2, z) * 360 - 180;
+const tile2lat = (y, z) => {
+  const n = Math.PI - 2 * Math.PI * y / Math.pow(2, z);
+  return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+};
+
+function llToEnuNmi(lat, lon, origin) {
+  const mLat = 111132.0, mLon = 111320.0 * Math.cos(origin.lat * Math.PI / 180);
+  return {e: (lon - origin.lon) * mLon / 1852, n: (lat - origin.lat) * mLat / 1852};
+}
+
+function drawTiles(svg, snap, PAD, PX, half) {
+  const origin = snap.origin;
+  if (!origin) return false;
+  const mPerPx = (half * 2 * 1852) / (half * 2 * PX);
+  const z = Math.max(6, Math.min(12, Math.round(
+    Math.log2(156543.03 * Math.cos(origin.lat * Math.PI / 180) / mPerPx))));
+
+  const dLat = (half * 1852 * 1.45) / 111132.0;
+  const dLon = (half * 1852 * 1.45) / (111320.0 * Math.cos(origin.lat * Math.PI / 180));
+  const x0 = Math.floor(lon2tile(origin.lon - dLon, z));
+  const x1 = Math.ceil(lon2tile(origin.lon + dLon, z));
+  const y0 = Math.floor(lat2tile(origin.lat + dLat, z));
+  const y1 = Math.ceil(lat2tile(origin.lat - dLat, z));
+  if ((x1 - x0) * (y1 - y0) > 64) return false;
+
+  const g = el("g", {opacity: 0.85});
+  for (let x = x0; x <= x1; x++) {
+    for (let y = y0; y <= y1; y++) {
+      const nw = llToEnuNmi(tile2lat(y, z), tile2lon(x, z), origin);
+      const se = llToEnuNmi(tile2lat(y + 1, z), tile2lon(x + 1, z), origin);
+      const px = PAD.x + nw.e * PX, py = PAD.y - nw.n * PX;
+      const w = (se.e - nw.e) * PX, h = (nw.n - se.n) * PX;
+      if (px > 700 || py > 460 || px + w < 0 || py + h < 0) continue;
+      g.append(el("image", {
+        href: TILE_URL.replace("{z}", z).replace("{x}", x).replace("{y}", y),
+        x: px, y: py, width: w, height: h, preserveAspectRatio: "none"
+      }));
+    }
+  }
+  svg.append(g);
+  return true;
+}
+
+const mapOn = () => document.getElementById("map-on").checked;
 const radarOn = () => document.getElementById("radar-on").checked;
 const showBelow = () => document.getElementById("show-below").checked;
 
@@ -191,18 +249,26 @@ const hhmmss = iso => iso ? iso.slice(11, 19) + "Z" : "";
 function drawPlan(snap, verdict) {
   const svg = document.getElementById("plan");
   svg.replaceChildren();
-  const PX = 10, PAD = {x: 150, y: 380};
+  const half = (snap.radar && snap.radar.plan && snap.radar.plan.extent.half_nmi)
+               || 26;
+  const PX = 215 / half;                     // fit the raster in the panel
+  const PAD = {x: 340, y: 230};              // pad centred, clouds on any side
   const az = (snap.azimuth_deg ?? 45) * Math.PI / 180;
   const pos = (bearing, range) => ({
     x: PAD.x + range * PX * Math.sin(bearing * Math.PI / 180),
     y: PAD.y - range * PX * Math.cos(bearing * Math.PI / 180)
   });
 
+  let tiled = false;
+  if (mapOn()) tiled = drawTiles(svg, snap, PAD, PX, half);
+  document.getElementById("attrib").textContent = tiled ? TILE_ATTRIB : "";
+
   if (snap.radar && radarOn()) {
     const rp = snap.radar.plan, h = (rp.extent.half_nmi || 26) * PX;
     svg.append(el("image", {href: rasterURL(rp, showBelow()),
                             x: PAD.x - h, y: PAD.y - h, width: 2 * h, height: 2 * h,
                             preserveAspectRatio: "none",
+                            opacity: tiled ? 0.72 : 1,
                             "image-rendering": "pixelated"}));
   }
 
@@ -245,6 +311,20 @@ function drawPlan(snap, verdict) {
     svg.append(el("text", {x: p.x, y: p.y + 4, class: "slb",
                            "text-anchor": "middle"}, oid));
   }
+  for (const site of (snap.sites || [])) {
+    if (site.name === snap.pad) continue;
+    const p = llToEnuNmi(site.lat, site.lon, snap.origin || {lat: 0, lon: 0});
+    const x = PAD.x + p.e * PX, y = PAD.y - p.n * PX;
+    if (x < 0 || x > 700 || y < 0 || y > 460) continue;
+    const radar = site.kind === "radar";
+    svg.append(el(radar ? "rect" : "circle", radar
+      ? {x: x - 3, y: y - 3, width: 6, height: 6, fill: "none",
+         stroke: "#b4b2a9", "stroke-width": 1}
+      : {cx: x, cy: y, r: 2.5, fill: "none", stroke: "#b4b2a9",
+         "stroke-width": 1}));
+    svg.append(el("text", {x: x + 7, y: y + 4, class: "sl"}, site.name));
+  }
+
   svg.append(el("circle", {cx: PAD.x, cy: PAD.y, r: 5, fill: "#f1efe8"}));
   svg.append(el("text", {x: PAD.x - 30, y: PAD.y + 22, class: "slb"}, snap.pad || "pad"));
 
@@ -456,7 +536,7 @@ function render(snap, verdict, meta) {
 }
 
 let CURRENT = null;
-for (const id of ["radar-on", "show-below"]) {
+for (const id of ["map-on", "radar-on", "show-below"]) {
   document.getElementById(id).addEventListener("change", () => {
     if (CURRENT) render(CURRENT.snap, CURRENT.verdict, CURRENT.meta);
   });

@@ -1,6 +1,6 @@
 """Anonymous S3 listing for the NOAA open-data buckets.
 
-Both `noaa-nexrad-level2` and `noaa-goes19` allow unauthenticated reads over
+Both `unidata-nexrad-level2` and `noaa-goes19` allow unauthenticated reads over
 plain HTTPS, so no boto3 and no credentials. The XML parsing is a pure
 function and is tested; the network call is not.
 """

@@ -32,12 +32,13 @@ def main() -> None:
         obj_dicts = {oid: o.__dict__ for oid, o in snapshot.objects.items()}
         radar = synth_field(obj_dicts, frame.time.isoformat())
         snap_doc = snapshot_to_dict(snapshot, pad=scen.pad,
-                                    azimuth_deg=scen.azimuth_deg, radar=radar)
+                                    azimuth_deg=scen.azimuth_deg, radar=radar,
+                                    origin={"lat": 28.6083, "lon": -80.6041})
         snap_doc["trajectory"] = raw.get("trajectory", [])
         frames.append({
             "snapshot": snap_doc,
-            "verdict": verdict_to_dict(overridden, applications, diff),
-            "baseline_verdict": verdict_to_dict(baseline),
+            "verdict": verdict_to_dict(overridden, applications, diff, snapshot=snapshot),
+            "baseline_verdict": verdict_to_dict(baseline, snapshot=snapshot),
         })
 
     write_json(out / "replay.json", {

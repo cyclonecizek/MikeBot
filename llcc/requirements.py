@@ -36,6 +36,38 @@ from .world import CloudType, EventKind, hours, minutes
 
 NEVER = Const(Tri.FALSE, "no exception in this requirement")
 
+# The standard's own section headings. Shown in place of the LLCCR number,
+# which is right for auditing and wrong for reading at a console.
+RULE_NAMES: dict[str, str] = {
+    "4.1.1": "Lightning",
+    "4.1.2": "Surface Electric Fields",
+    "4.1.3": "Cumulus Clouds",
+    "4.1.4": "Attached Anvil Clouds",
+    "4.1.5": "Detached Anvil Clouds",
+    "4.1.6": "Debris Clouds",
+    "4.1.7": "Disturbed Weather",
+    "4.1.8": "Thick Cloud Layers",
+    "4.1.9": "Smoke Plumes",
+    "4.1.10": "Triboelectrification",
+    "4.2.1": "Radar Reflectivity Measurement",
+    "4.2.2": "Quantification of Precipitation",
+    "4.2.3": "Computation of MRR",
+    "4.2.4": "Surface Electric Field Measurement",
+    "4.2.5": "Non-Transparent Boundaries",
+    "4.2.6": "Slant Distance from Lightning",
+    "4.3": "Physically Connected Clouds",
+}
+
+
+def rule_name(section: str) -> str:
+    """Longest matching section prefix wins, so 4.1.10.1 resolves to
+    Triboelectrification rather than to Lightning."""
+    best = ""
+    for prefix in RULE_NAMES:
+        if section.startswith(prefix) and len(prefix) > len(best):
+            best = prefix
+    return RULE_NAMES.get(best, "Launch Commit Criteria")
+
 
 @dataclass
 class Requirement:

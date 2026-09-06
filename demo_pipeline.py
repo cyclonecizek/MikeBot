@@ -27,6 +27,7 @@ GRID = Grid(nx=96, ny=96, nz=40, dx=1000.0, dy=1000.0, dz=500.0)
 T0 = datetime(2026, 9, 4, 20, 55, 0)
 SCAN = timedelta(minutes=4, seconds=30)
 AZIMUTH = 45.0
+PAD = {"lat": 28.6083, "lon": -80.6041}
 
 PROFILE = ThermalProfile(levels=[
     (0, 29.0), (1000, 22.0), (2000, 15.5), (3000, 9.0), (3600, 5.0),
@@ -145,9 +146,9 @@ def main() -> None:
         radar = RadarField(valid_time=when.isoformat(),
                            source="synthetic field, segmented in place",
                            plan=to_plan(refl, obs), xsec=to_xsec(refl, obs))
-        doc = snapshot_to_dict(snap, pad="LC-39A", azimuth_deg=AZIMUTH, radar=radar)
+        doc = snapshot_to_dict(snap, pad="LC-39A", azimuth_deg=AZIMUTH, origin=PAD, overlay=pipe.overlay(), classifier=pipe.classifier_state(), radar=radar)
         doc["trajectory"] = [[d, a, v] for d, a, v in TRAJECTORY]
-        out.append({"snapshot": doc, "verdict": verdict_to_dict(verdict)})
+        out.append({"snapshot": doc, "verdict": verdict_to_dict(verdict, snapshot=snap)})
         n = len([k for k in snap.objects if k != "DOMAIN"])
         print(f"  {when:%H:%M:%S}Z  {verdict.state.name:<14} "
               f"{n} object(s), {len(verdict.blocking)} blocking")

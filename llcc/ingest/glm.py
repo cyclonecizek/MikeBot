@@ -100,7 +100,8 @@ def read_flashes(path: str, origin_lat: float, origin_lon: float,
 
 
 def load_window(when: datetime, minutes: float, origin_lat: float,
-                origin_lon: float, cache_dir: str = "/tmp") -> list[Flash]:
+                origin_lon: float, cache_dir: str = "/tmp",
+                workers: int = 12, max_granules: int = 400) -> list[Flash]:
     """UNVERIFIED: needs network and netCDF4.
 
     Ingest a wider domain than the 10 nmi the criteria use -- a cell that
@@ -108,6 +109,9 @@ def load_window(when: datetime, minutes: float, origin_lat: float,
     4.1.1.2 and every anvil clock. Objects arriving with no provenance have
     to be treated as indeterminate.
     """
+    if minutes <= 0:
+        return []
+
     start = when - timedelta(minutes=minutes)
     keys: list[str] = []
     probe = start.replace(minute=0, second=0, microsecond=0)
@@ -115,9 +119,33 @@ def load_window(when: datetime, minutes: float, origin_lat: float,
         keys.extend(list_keys(BUCKET, glm_prefix(probe)))
         probe += timedelta(hours=1)
 
-    flashes: list[Flash] = []
-    for key in keys:
+    # GLM granules cover 20 seconds each, so an hour is about 180 files and a
+    # six-hour window is over a thousand. Downloading those one at a time is
+    # the difference between a minute and an afternoon.
+    if len(keys) > max_granules:
+        raise RuntimeError(
+            f"{len(keys)} GLM granules for a {minutes:.0f} min window exceeds "
+            f"max_granules={max_granules}. Narrow --glm-minutes, or raise the "
+            f"cap deliberately.")
+
+    import concurrent.futures as cf
+
+    def grab(key: str) -> str:
         path = f"{cache_dir}/{key.rsplit('/', 1)[-1]}"
         download(BUCKET, key, path)
-        flashes.extend(read_flashes(path, origin_lat, origin_lon))
+        return path
+
+    paths: list[str] = []
+    with cf.ThreadPoolExecutor(max_workers=workers) as pool:
+        for n, path in enumerate(pool.map(grab, keys), start=1):
+            paths.append(path)
+            if n % 25 == 0 or n == len(keys):
+                print(f"    GLM {n}/{len(keys)} granules", flush=True)
+
+    flashes: list[Flash] = []
+    for path in paths:
+        try:
+            flashes.extend(read_flashes(path, origin_lat, origin_lon))
+        except Exception as exc:
+            print(f"    skipped {path}: {exc}")
     return [f for f in flashes if start <= f.time <= when]

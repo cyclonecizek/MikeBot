@@ -16,7 +16,7 @@ import numpy as np
 from llcc.geometry import Grid
 from llcc.ingest.beam import (
     beam_height, beam_width, detectable, meteorological_mask,
-    minimum_detectable_dbz, observability_mask,
+    minimum_detectable_dbz, observability_mask, phidp_texture,
 )
 from llcc.ingest.glm import (
     Flash, dilate_footprint, footprint_points, latlon_to_en,
@@ -63,13 +63,53 @@ print("\ndual-pol quality control")
 refl = np.array([40.0, 40.0, 40.0, 40.0])
 rho = np.array([0.99, 0.60, 0.99, np.nan])
 zdr = np.array([0.5, 4.0, 9.0, 0.5])
-keep = meteorological_mask(refl, rho, zdr)
+keep = meteorological_mask(refl, rho_hv=rho, zdr=zdr)
 check("high rho and modest ZDR is kept", bool(keep[0]))
 check("low rho is rejected as non-meteorological", not bool(keep[1]))
 check("extreme ZDR is rejected", not bool(keep[2]))
 check("missing rho is rejected rather than assumed good", not bool(keep[3]))
 check("without dual-pol the filter degrades but does not crash",
       meteorological_mask(refl).all())
+
+print("\nclutter discrimination")
+rain_phi = np.cumsum(np.full((2, 40), 0.4), axis=1)
+clut_phi = np.random.default_rng(1).uniform(0, 360, size=(2, 40))
+check("smooth PhiDP gives low texture", float(phidp_texture(rain_phi).mean()) < 2.0)
+check("erratic PhiDP gives high texture", float(phidp_texture(clut_phi).mean()) > 40.0)
+check("phase wrapping does not inflate texture",
+      float(phidp_texture(np.array([[358.0, 359.0, 0.0, 1.0, 2.0, 3.0]])).mean()) < 2.0)
+
+r = np.full((2, 6), 35.0)
+good = np.full((2, 6), 0.99)
+kept = meteorological_mask(r, rho_hv=good, phidp=np.cumsum(np.full((2, 6), 0.3), axis=1))
+check("smooth precipitation survives every test", bool(kept.all()))
+kept = meteorological_mask(r, rho_hv=good,
+                           phidp=np.random.default_rng(2).uniform(0, 360, (2, 6)))
+check("erratic phase is rejected even with high rho", not bool(kept.any()))
+
+# Height-dependent rho: the same 0.90 gate is clutter near the surface and
+# legitimate melting-layer return at the bright band.
+low = np.full((1, 3), 400.0)
+mid = np.full((1, 3), 4200.0)
+rho90 = np.full((1, 3), 0.90)
+r3 = np.full((1, 3), 30.0)
+check("rho 0.90 near the surface is rejected as clutter",
+      not meteorological_mask(r3, rho_hv=rho90, heights_m=low).any())
+check("the same rho in the melting layer is kept",
+      meteorological_mask(r3, rho_hv=rho90, heights_m=mid,
+                          freezing_level_m=4600.0).all())
+
+check("stationary targets are rejected",
+      not meteorological_mask(r3, rho_hv=np.full((1, 3), 0.90),
+                              velocity=np.zeros((1, 3))).any())
+check("stationary but very high rho is kept",
+      meteorological_mask(r3, rho_hv=np.full((1, 3), 0.99),
+                          velocity=np.zeros((1, 3))).all())
+
+rep: dict = {}
+meteorological_mask(r, rho_hv=np.full((2, 6), 0.5), report=rep)
+check("the report names which test did the rejecting",
+      rep.get("rho_hv", 0) == 12 and rep.get("kept") == 0)
 
 print("\nS3 keys and listing")
 xml = """<?xml version="1.0"?>

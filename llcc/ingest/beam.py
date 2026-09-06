@@ -23,11 +23,17 @@ Two things this module exists to produce:
 from __future__ import annotations
 
 import numpy as np
+from scipy.ndimage import uniform_filter1d
 
 EARTH_RADIUS_M = 6_371_000.0
 REFRACTION_K = 4.0 / 3.0          # standard atmosphere effective radius
 BEAMWIDTH_DEG = 0.925             # WSR-88D half-power beamwidth
-WSR88D_MDS_DBZ_AT_1KM = -32.0     # typical; site-specific, calibrate per radar
+# Back-calculated from the commonly quoted WSR-88D figure of about
+# -7.5 dBZ at 50 km: -7.5 - 20*log10(50) = -41.5 at 1 km. An earlier value of
+# -32 put 0 dBZ below the noise floor beyond ~25 km, which marked the entire
+# grid unobservable when the radar sits 55 km from the pad. Site-specific;
+# calibrate per radar if you have the figure.
+WSR88D_MDS_DBZ_AT_1KM = -41.5
 
 
 def beam_height(range_m, elevation_deg, radar_alt_m: float = 0.0):
@@ -103,35 +109,120 @@ def observability_mask(grid, radar_east: float, radar_north: float,
         for lo, hi in blocked_sectors:
             ok &= ~((az >= lo) & (az <= hi))
 
+    # Envelope between the lowest and highest tilt rather than proximity to
+    # any single beam centre. Above about 4 km the gaps between tilts exceed
+    # the beam width, and testing each beam separately punches holes through
+    # volume the gridding interpolates across perfectly well. The two real
+    # failure modes are what this keeps: below the lowest tilt is overshoot,
+    # above the highest is the cone of silence.
     half = beam_width(slant) / 2.0
-    covered = np.zeros(grid.shape, dtype=bool)
-    for elev in elevations_deg:
-        centre = beam_height(slant, elev, radar_alt_m)
-        covered |= np.abs(up - centre) <= half
-    return ok & covered
+    floor = beam_height(slant, min(elevations_deg), radar_alt_m) - half
+    ceiling = beam_height(slant, max(elevations_deg), radar_alt_m) + half
+    return ok & (up >= floor) & (up <= ceiling)
 
 
-def meteorological_mask(refl, rho_hv=None, zdr=None,
+def phidp_texture(phidp, window: int = 9):
+    """Gate-to-gate variability of differential phase along each ray.
+
+    The single strongest non-meteorological discriminator available in Level
+    II. Precipitation produces a smoothly varying PhiDP; ground clutter,
+    anomalous propagation, biota and RF interference produce an erratic one.
+    Computed as a windowed mean absolute gate-to-gate difference, which is
+    far less sensitive to phase wrapping than a windowed standard deviation.
+    """
+    phi = np.asarray(phidp, dtype=float)
+    diff = np.diff(phi, axis=-1)
+    diff = (diff + 180.0) % 360.0 - 180.0        # unwrap to [-180, 180)
+    diff = np.abs(np.nan_to_num(diff, nan=0.0))
+    pad = np.concatenate([diff[..., :1], diff], axis=-1)
+    # uniform_filter1d preserves length; np.convolve with mode="same" returns
+    # the longer of its two inputs, which silently reshapes short rays.
+    window = max(1, min(window, pad.shape[-1]))
+    return uniform_filter1d(pad, size=window, axis=-1, mode="nearest")
+
+
+def meteorological_mask(refl, rho_hv=None, zdr=None, phidp=None, velocity=None,
+                        heights_m=None, radar_alt_m: float = 0.0,
+                        freezing_level_m: float | None = None,
                         rho_min: float = 0.85,
-                        zdr_max: float = 6.0,
-                        refl_min: float = -30.0) -> np.ndarray:
+                        rho_min_surface: float = 0.93,
+                        rho_min_melting: float = 0.80,
+                        surface_agl_m: float = 1200.0,
+                        zdr_max: float = 5.0,
+                        texture_max_deg: float = 12.0,
+                        velocity_min_ms: float = 0.5,
+                        refl_min: float = -30.0,
+                        report: dict | None = None) -> np.ndarray:
     """LLCCR 29b: keep only gates plausibly due to a meteorological target.
 
-    Biological scatterers -- insects, birds, bats -- return low correlation
-    coefficient and large, erratic differential reflectivity. Ground clutter
-    and anomalous propagation share the low-rho signature. Filtering on
-    polarimetry before thresholding on reflectivity keeps the 0 dBZ contour
-    from being drawn around a swarm of insects.
+    The standard's cloud boundary is the 0 dBZ contour, so anything that
+    survives this filter becomes cloud -- which makes the filter load-bearing
+    rather than cosmetic. Five tests, each degrading gracefully when its
+    input is absent:
 
-    With no dual-pol input the mask degrades to a finite-value check, which
-    is honest but much weaker: say so in the output rather than implying the
-    QC ran.
+      Correlation coefficient, with a **height-dependent threshold**. A
+      single global rho cut cannot work: ground clutter and AP sit near the
+      surface and need a strict cut, while the melting layer legitimately
+      depresses rho to 0.85-0.95 and needs a relaxed one. A flat 0.85 is
+      simultaneously too loose near the ground and too tight in the bright
+      band.
+
+      Differential phase texture. Erratic PhiDP is the clearest signature of
+      clutter, AP, biota and interference.
+
+      Near-zero radial velocity combined with unremarkable rho: ground
+      targets do not move. Only applied where rho is not already convincing,
+      so genuine zero-Doppler precipitation is not discarded.
+
+      Differential reflectivity, for large erratic returns from biota.
+
+      A finite-value and floor check.
+
+    Pass `report` to receive per-test rejection counts, which is how you find
+    out whether a filter is doing its job or eating your weather.
     """
+    refl = np.asarray(refl, dtype=float)
     keep = np.isfinite(refl) & (refl >= refl_min)
+    counts = {"total": int(refl.size), "not_finite_or_floor": int((~keep).sum())}
+
     if rho_hv is not None:
-        keep &= np.isfinite(rho_hv) & (rho_hv >= rho_min)
+        rho = np.asarray(rho_hv, dtype=float)
+        threshold = np.full(rho.shape, rho_min, dtype=float)
+        if heights_m is not None:
+            agl = np.asarray(heights_m, dtype=float) - radar_alt_m
+            threshold = np.where(agl <= surface_agl_m, rho_min_surface, threshold)
+            if freezing_level_m is not None:
+                melting = ((np.asarray(heights_m) >= freezing_level_m - 1500.0)
+                           & (np.asarray(heights_m) <= freezing_level_m + 400.0))
+                threshold = np.where(melting, rho_min_melting, threshold)
+        bad = ~(np.isfinite(rho) & (rho >= threshold))
+        counts["rho_hv"] = int((keep & bad).sum())
+        keep &= ~bad
+
+    if phidp is not None:
+        texture = phidp_texture(phidp)
+        bad = ~np.isfinite(texture) | (texture > texture_max_deg)
+        counts["phidp_texture"] = int((keep & bad).sum())
+        keep &= ~bad
+
+    if velocity is not None:
+        vel = np.abs(np.asarray(velocity, dtype=float))
+        stationary = np.isfinite(vel) & (vel < velocity_min_ms)
+        if rho_hv is not None:
+            rho = np.asarray(rho_hv, dtype=float)
+            stationary &= ~(np.isfinite(rho) & (rho >= 0.97))
+        counts["stationary"] = int((keep & stationary).sum())
+        keep &= ~stationary
+
     if zdr is not None:
-        keep &= np.isfinite(zdr) & (np.abs(zdr) <= zdr_max)
+        z = np.asarray(zdr, dtype=float)
+        bad = ~(np.isfinite(z) & (np.abs(z) <= zdr_max))
+        counts["zdr"] = int((keep & bad).sum())
+        keep &= ~bad
+
+    counts["kept"] = int(keep.sum())
+    if report is not None:
+        report.update(counts)
     return keep
 
 

@@ -64,6 +64,7 @@ class Segmentation:
     segments: dict[int, Segment]
     components: np.ndarray
     connections: list[tuple[int, int]] = field(default_factory=list)
+    dropped: int = 0
 
     def cluster_of(self, label: int) -> int:
         return self.segments[label].component
@@ -84,7 +85,11 @@ def cloud_field(refl: np.ndarray, observable: np.ndarray | None = None,
 
 def segment_field(refl: np.ndarray, grid, observable: np.ndarray | None = None,
                   cloud_dbz: float = CLOUD_DBZ, seed_dbz: float = SEED_DBZ,
-                  min_separation_m: float = 4000.0) -> Segmentation:
+                  min_separation_m: float = 6000.0,
+                  min_voxels: int = 24,
+                  min_footprint_cells: int = 6,
+                  min_levels: int = 2,
+                  min_neighbours: int = 7) -> Segmentation:
     """Hysteresis threshold, then watershed into objects, then build the
     connection graph.
 
@@ -95,6 +100,36 @@ def segment_field(refl: np.ndarray, grid, observable: np.ndarray | None = None,
     anvil and cirrus never reach the seed threshold but are still clouds.
     """
     cloud = cloud_field(refl, observable, cloud_dbz)
+
+    # Spatial coherence first, and this one matters more than the size
+    # filter. Isolated gates just above 0 dBZ survive polarimetric QC, and
+    # scattered through a volume they link up into one percolating network
+    # that spans the domain -- a single "cloud" tens of miles across made of
+    # noise. Requiring a voxel to have company in its 3x3x3 neighbourhood
+    # breaks those filaments without eroding real cloud: a voxel inside a
+    # one-level-thick sheet still has nine, so thin anvil and cirrus survive
+    # a threshold of seven, while an isolated gate has one and a filament
+    # has three.
+    #
+    # LLCCR 33c requires allowance for the radar's spatial resolution when
+    # computing a cloud boundary, which is the licence for doing this at all.
+    if min_neighbours > 1:
+        counts = ndimage.uniform_filter(cloud.astype(np.float32), size=3,
+                                        mode="constant") * 27.0
+        cloud &= counts >= min_neighbours
+
+    # Then drop specks before labelling. On real data the 0 dBZ field is peppered
+    # with residual clutter, sea return and isolated gates that survive
+    # polarimetric QC. Each one would otherwise become a "cloud" carrying its
+    # own standoff buffer and lineage, which is both meaningless under the
+    # standard and expensive: every object costs full-grid geometry.
+    if min_voxels > 1:
+        pre, n_pre = ndimage.label(cloud)
+        if n_pre:
+            sizes = np.bincount(pre.ravel())
+            sizes[0] = 0
+            cloud &= np.isin(pre, np.flatnonzero(sizes >= min_voxels))
+
     components, n_components = ndimage.label(cloud)
 
     if n_components == 0:
@@ -124,12 +159,25 @@ def segment_field(refl: np.ndarray, grid, observable: np.ndarray | None = None,
     labels = watershed(-np.where(cloud, refl, -1e9), markers, mask=cloud)
 
     segments: dict[int, Segment] = {}
+    dropped = 0
     for lab in np.unique(labels):
         if lab == 0:
             continue
         mask = labels == lab
         idx = np.argwhere(mask)
         levels = idx[:, 2]
+
+        # A basin must be big enough to be a cloud rather than a fragment.
+        # Footprint and depth are separate tests: a wide shallow deck and a
+        # narrow deep tower are both real, a two-gate speck is neither.
+        footprint = int(mask.any(axis=2).sum())
+        depth = int(levels.max() - levels.min() + 1)
+        if (mask.sum() < min_voxels or footprint < min_footprint_cells
+                or depth < min_levels):
+            labels[mask] = 0
+            dropped += 1
+            continue
+
         comp = int(components[tuple(idx[0])])
         touches = bool(
             idx[:, 0].min() == 0 or idx[:, 0].max() == grid.nx - 1
@@ -153,7 +201,22 @@ def segment_field(refl: np.ndarray, grid, observable: np.ndarray | None = None,
             for b in range(a + 1, len(members)):
                 connections.append((members[a], members[b]))
 
-    return Segmentation(labels, segments, components, connections)
+    seg = Segmentation(labels, segments, components, connections)
+    seg.dropped = dropped
+    return seg
+
+
+def footprint_raster(labels: np.ndarray, order: list[int]) -> np.ndarray:
+    """2D map of which object occupies each column, for the display.
+
+    Objects are drawn from their actual footprint rather than as a circle of
+    equivalent area. A sprawling object and a compact one of the same area
+    demand very different standoffs in practice, and a circle hides that.
+    """
+    out = np.zeros(labels.shape[:2], dtype=np.uint8)
+    for n, lab in enumerate(order[:250], start=1):
+        out[(labels == lab).any(axis=2)] = n
+    return out
 
 
 def observability(mask: np.ndarray, observable: np.ndarray | None) -> float:
@@ -178,3 +241,36 @@ def precipitation_flags(refl: np.ndarray, mask: np.ndarray) -> tuple[bool, bool]
         return False, False
     peak = float(np.nanmax(refl[mask]))
     return peak >= PRECIP_DBZ, peak >= MODERATE_DBZ
+
+
+def bright_band_field(refl: np.ndarray, grid, freezing_level_m: float | None,
+                      enhancement_db: float = 5.0,
+                      band_m: float = 1200.0) -> np.ndarray:
+    """Melting layer signature in reflectivity alone, as a 2D mask.
+
+    LLCCR 21b names a radar bright band explicitly. Frozen hydrometeors
+    beginning to melt scatter like large wet particles, producing a
+    horizontally extensive reflectivity maximum in a shallow layer just below
+    the 0 C level. Comparing that band against the layer above it isolates
+    the enhancement.
+
+    Polarimetric detection on the polar gates is stronger -- depressed rho_hv
+    with enhanced ZDR -- but this works on the gridded field the segmentation
+    already has, and it degrades to "no bright band" rather than to a wrong
+    answer when the freezing level is unknown.
+    """
+    if freezing_level_m is None:
+        return np.zeros((grid.nx, grid.ny), dtype=bool)
+
+    k_bb0 = grid.level_at(freezing_level_m - band_m)
+    k_bb1 = grid.level_at(freezing_level_m)
+    k_up1 = grid.level_at(freezing_level_m + band_m)
+    if k_bb1 <= k_bb0 or k_up1 <= k_bb1:
+        return np.zeros((grid.nx, grid.ny), dtype=bool)
+
+    with np.errstate(invalid="ignore"):
+        band = np.nanmax(refl[:, :, k_bb0:k_bb1], axis=2)
+        above = np.nanmax(refl[:, :, k_bb1:k_up1], axis=2)
+    band = np.where(np.isfinite(band), band, -np.inf)
+    above = np.where(np.isfinite(above), above, -np.inf)
+    return np.isfinite(band) & (band - above >= enhancement_db) & (band >= 15.0)

@@ -24,7 +24,8 @@ import numpy as np
 from llcc.evaluate import evaluate, format_verdict
 from llcc.geometry import NM_TO_M, Grid, build_corridor
 from llcc.ingest.glm import load_window
-from llcc.ingest.nexrad import KMLB, load_scan
+from llcc.ingest.nexrad import KMLB, grid_scan
+from llcc.ingest.sources import aws_index, fetch, resolve_volumes
 from llcc.ingest.profile import from_pairs, parse_uwyo_sounding
 from llcc.pipeline import Pipeline, PipelineConfig
 from llcc.radar import NO_ECHO, UNOBSERVABLE, RadarField, Raster
@@ -39,7 +40,7 @@ TRAJECTORY = [(0, 0.0, 0), (2.5, 1.6, 290), (5, 3.2, 450),
 FALLBACK_PROFILE = [(0, 29.0), (1000, 22.0), (2000, 15.5), (3000, 9.0),
                     (3600, 5.0), (4600, 0.0), (5600, -5.0), (6600, -10.0),
                     (7600, -15.0), (8700, -20.0), (10000, -33.0),
-                    (12000, -52.0), (14000, -68.0), (16000, -80.0)]
+                    (12000, -52.0), (14000, -68.0), (16000, -80.0), (18000, -76.0), (20000, -70.0)]
 
 
 def radar_offset_from_pad() -> tuple[float, float]:
@@ -85,10 +86,53 @@ def to_xsec(refl, obs, grid, nx=128, ny=72, max_nmi=25.0, max_km=18.0) -> Raster
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--time", required=True, help="ISO time, e.g. 2026-09-04T21:04:00")
+    ap.add_argument("--time", required=True,
+                    help="ISO start time, e.g. 2026-08-26T16:00:00")
+    ap.add_argument("--end", help="ISO end time. Omit for a single volume.")
+    ap.add_argument("--source", default="aws", choices=("aws", "gcp", "thredds"),
+                    help="aws: unidata-nexrad-level2, individual volumes. "
+                         "gcp: hourly tars, needs unpacking. thredds: rolling "
+                         "archive, recent dates only.")
+    ap.add_argument("--list-only", action="store_true",
+                    help="resolve volumes and stop, without decoding")
+    ap.add_argument("--stride", type=int, default=1,
+                    help="take every Nth volume; 2 or 3 keeps replay.json small")
     ap.add_argument("--site", default="KMLB")
     ap.add_argument("--sounding", help="University of Wyoming text sounding for XMR")
-    ap.add_argument("--glm-minutes", type=float, default=240.0,
+    ap.add_argument("--disturbed-weather", choices=("yes", "no", "unknown"),
+                    default="no",
+                    help="declare whether a front, trough, squall line or "
+                         "tropical wave is driving the convection. Sea breeze "
+                         "and outflow boundaries are NOT disturbed weather "
+                         "(section 3.2). Defaults to no; 'unknown' leaves "
+                         "LLCCR 21 indeterminate.")
+    ap.add_argument("--rho-min", type=float, default=0.85,
+                    help="correlation coefficient floor away from the surface")
+    ap.add_argument("--rho-min-surface", type=float, default=0.93,
+                    help="stricter floor below 1.2 km AGL, where clutter lives")
+    ap.add_argument("--texture-max", type=float, default=12.0,
+                    help="max PhiDP texture in degrees; raise if it eats "
+                         "convective cores")
+    ap.add_argument("--roi-nb", type=float, default=0.7,
+                    help="beam-width factor for the gridding radius of "
+                         "influence. Lower means less interpolation smear; "
+                         "Py-ART's default is 1.5.")
+    ap.add_argument("--min-neighbours", type=int, default=7,
+                    help="cloud voxels required in a 3x3x3 neighbourhood. "
+                         "Breaks percolating speckle; a one-level sheet has 9.")
+    ap.add_argument("--threshold", action="append", default=[],
+                    metavar="NAME=VALUE",
+                    help="override a classifier threshold, repeatable. The "
+                         "display's what-if panel prints these for you.")
+    ap.add_argument("--no-classify", action="store_true",
+                    help="treat every object as cumulus, the most restrictive "
+                         "type. The honest baseline when the classifier is "
+                         "not trusted.")
+    ap.add_argument("--min-voxels", type=int, default=24,
+                    help="smallest object that counts as a cloud, in voxels")
+    ap.add_argument("--no-glm", action="store_true",
+                    help="skip lightning entirely; much faster for a first run")
+    ap.add_argument("--glm-minutes", type=float, default=60.0,
                     help="lightning history to ingest; wider than the criteria "
                          "need, so objects arrive with provenance")
     ap.add_argument("-o", "--outdir", default="docs/data")
@@ -96,8 +140,19 @@ def main() -> None:
     args = ap.parse_args()
 
     when = datetime.fromisoformat(args.time)
+    end = datetime.fromisoformat(args.end) if args.end else when
     grid = Grid(nx=96, ny=96, nz=40, dx=1000.0, dy=1000.0, dz=500.0)
     corridor = build_corridor(grid, TRAJECTORY, AZIMUTH, radius_m=1500.0)
+
+    from llcc.classify import Thresholds
+    thresholds = Thresholds()
+    for spec in args.threshold:
+        name, _, value = spec.partition("=")
+        if not hasattr(thresholds, name):
+            raise SystemExit(f"unknown threshold {name!r}; see llcc/classify.py")
+        setattr(thresholds, name, float(value))
+    if args.threshold:
+        print("thresholds: " + ", ".join(args.threshold))
 
     if args.sounding:
         profile = parse_uwyo_sounding(Path(args.sounding).read_text())
@@ -109,49 +164,98 @@ def main() -> None:
           f"-20 C at {profile.isotherm_altitude(-20.0):.0f} m")
 
     radar_east, radar_north = radar_offset_from_pad()
-    print(f"fetching {args.site} near {when:%Y-%m-%d %H:%M:%S}Z ...")
-    scan = load_scan(args.site, when, grid, radar_east, radar_north,
-                     KMLB["alt_m"])
-    print(f"  {scan.key}  dual-pol={scan.dual_pol}  "
-          f"observable={scan.observable.mean():.1%} of volume")
 
-    print(f"fetching GLM back {args.glm_minutes:.0f} min ...")
-    flashes = load_window(when, args.glm_minutes, PAD["lat"], PAD["lon"])
-    print(f"  {len(flashes)} flashes")
+    print(f"resolving {args.site} volumes from {args.source} ...")
+    if args.source == "aws":
+        volumes = aws_index(args.site, when, end)
+    else:
+        volumes = resolve_volumes(args.site, when, end, source=args.source)
+    if not volumes:
+        raise SystemExit(f"no {args.site} volumes between "
+                         f"{when:%H:%M}Z and {end:%H:%M}Z")
+    volumes = volumes[::max(1, args.stride)]
+    print(f"{len(volumes)} volume(s) to process "
+          f"({volumes[0].time:%H:%M:%S}Z to {volumes[-1].time:%H:%M:%S}Z)")
+    if args.list_only:
+        for v in volumes:
+            print(f"  {v.time:%H:%M:%S}Z  {Path(v.path).name}")
+        return
 
-    pipe = Pipeline(PipelineConfig(grid=grid, corridor=corridor, profile=profile,
-                                   vehicle=VehicleConfig(
-                                       name=args.site + " run",
-                                       triboelectric_exemption="4.1.10.2b",
-                                       triboelectric_basis="ESD analysis on file"),
-                                   azimuth_deg=AZIMUTH))
+    if args.no_glm:
+        print("skipping GLM (--no-glm): lightning criteria will read as clear")
+        flashes = []
+    else:
+        span = args.glm_minutes + (end - when).total_seconds() / 60.0
+        print(f"fetching GLM over {span:.0f} min "
+              f"(~{span * 3:.0f} granules) ...")
+        flashes = load_window(end, span, PAD["lat"], PAD["lon"])
+        print(f"  {len(flashes)} flashes")
 
-    # Replay lightning history before the scan so clocks start correctly, then
-    # ingest the scan itself.
-    strikes = [p for f in flashes if f.time <= scan.time for p in f.points_en]
-    snapshot = pipe.ingest(scan.refl, scan.time, observable=scan.observable,
-                           strikes=strikes)
-    verdict = evaluate(snapshot, scan.time,
-                       assume_manifest_complete=args.assume_manifest_complete)
-    print()
-    print(format_verdict(verdict))
+    pipe = Pipeline(PipelineConfig(
+        grid=grid, corridor=corridor, profile=profile,
+        vehicle=VehicleConfig(name=args.site + " run",
+                              triboelectric_exemption="4.1.10.2b",
+                              triboelectric_basis="ESD analysis on file"),
+        azimuth_deg=AZIMUTH, min_voxels=args.min_voxels,
+        classify=not args.no_classify, thresholds=thresholds,
+        min_neighbours=args.min_neighbours,
+        disturbed_weather=(None if args.disturbed_weather == "unknown"
+                           else args.disturbed_weather == "yes")))
 
-    radar = RadarField(valid_time=scan.time.isoformat(),
-                       source=f"{args.site} Level II",
-                       plan=to_plan(scan.refl, scan.observable, grid),
-                       xsec=to_xsec(scan.refl, scan.observable, grid))
-    doc = snapshot_to_dict(snapshot, pad="LC-39A", azimuth_deg=AZIMUTH, radar=radar)
-    doc["trajectory"] = [[d, a, v] for d, a, v in TRAJECTORY]
-    write_json(f"{args.outdir}/snapshot.json", doc)
-    write_json(f"{args.outdir}/verdict.json", verdict_to_dict(verdict))
+    import pyart
+
+    frames = []
+    last = datetime.min
+    for n, vol in enumerate(volumes, start=1):
+        fetch(vol)
+        radar = pyart.io.read_nexrad_archive(vol.path)
+        scan = grid_scan(radar, grid, radar_east, radar_north, KMLB["alt_m"],
+                         rho_min=args.rho_min,
+                         rho_min_surface=args.rho_min_surface,
+                         texture_max_deg=args.texture_max,
+                         roi_nb=args.roi_nb,
+                         freezing_level_m=profile.isotherm_altitude(0.0))
+        scan.key = vol.path
+        # Trust the archive filename over the in-file time units string,
+        # which varies between products.
+        scan.time = vol.time
+
+        # Feed only the flashes since the previous volume, so each ingest
+        # advances the event log rather than replaying the whole window.
+        strikes = [pt for f in flashes if last < f.time <= scan.time
+                   for pt in f.points_en]
+        last = scan.time
+
+        snapshot = pipe.ingest(scan.refl, scan.time, observable=scan.observable,
+                               strikes=strikes)
+        verdict = evaluate(snapshot, scan.time,
+                           assume_manifest_complete=args.assume_manifest_complete)
+
+        radar_field = RadarField(
+            valid_time=scan.time.isoformat(), source=f"{args.site} Level II",
+            plan=to_plan(scan.refl, scan.observable, grid),
+            xsec=to_xsec(scan.refl, scan.observable, grid))
+        doc = snapshot_to_dict(snapshot, pad="LC-39A", azimuth_deg=AZIMUTH, origin=PAD, overlay=pipe.overlay(), classifier=pipe.classifier_state(),
+                               radar=radar_field)
+        doc["trajectory"] = [[d, a, v] for d, a, v in TRAJECTORY]
+        frames.append({"snapshot": doc, "verdict": verdict_to_dict(verdict, snapshot=snapshot)})
+
+        objs = len([k for k in snapshot.objects if k != "DOMAIN"])
+        print(f"  [{n}/{len(volumes)}] {scan.time:%H:%M:%S}Z  "
+              f"{verdict.state.name:<14} {objs} object(s), "
+              f"{len(verdict.blocking)} blocking, "
+              f"{scan.observable.mean():.0%} observable")
+
     write_json(f"{args.outdir}/replay.json", {
         "schema": SCHEMA_VERSION, "kind": "replay",
-        "name": f"{args.site} {scan.time:%Y-%m-%d %H:%M}Z",
+        "name": f"{args.site} {when:%Y-%m-%d %H:%M}-{end:%H:%M}Z",
         "pad": "LC-39A", "azimuth_deg": AZIMUTH,
         "manifest_gate_suppressed": args.assume_manifest_complete,
-        "frames": [{"snapshot": doc, "verdict": verdict_to_dict(verdict)}],
+        "frames": frames,
     })
-    print(f"\nwrote {args.outdir}/snapshot.json, verdict.json, replay.json")
+    write_json(f"{args.outdir}/snapshot.json", frames[-1]["snapshot"])
+    write_json(f"{args.outdir}/verdict.json", frames[-1]["verdict"])
+    print(f"\nwrote {len(frames)} frames to {args.outdir}/replay.json")
 
 
 if __name__ == "__main__":

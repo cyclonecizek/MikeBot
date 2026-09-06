@@ -34,9 +34,10 @@
   .crit summary{display:flex;align-items:center;gap:10px;padding:9px 2px;
                 cursor:pointer;list-style:none}
   .crit summary::-webkit-details-marker{display:none}
-  .crit .id{font-variant-numeric:tabular-nums;font-weight:600;min-width:70px}
-  .crit .sec{color:var(--muted);font-size:12px;min-width:56px}
-  .crit .ttl{flex:1;min-width:0}
+  .crit .rule{font-weight:600;min-width:170px}
+  .crit .sec{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;
+             white-space:nowrap}
+  .crit .ttl{flex:1;min-width:0;color:var(--muted);font-size:12px}
   .pill{font-size:12px;padding:2px 8px;border-radius:999px;white-space:nowrap}
   .go{color:var(--go);background:var(--go-bg)}
   .no_go{color:var(--nogo);background:var(--nogo-bg)}
@@ -66,6 +67,21 @@
   .cbar{height:10px;border-radius:3px;flex:1;min-width:120px;
         background:linear-gradient(to right,#7a8fa6,#4a7ab5,#3aa5d8,#2fc6c6,
         #35c15a,#1f9e3e,#e8e332,#e9b02c,#e5772a,#dc3b28,#b1231d,#c62aa0,#e0a8e8)}
+  .whatif{border:1px solid var(--line);border-radius:8px;background:var(--panel);
+          padding:12px;margin-bottom:14px}
+  .whatif h3{margin:0 0 2px;font-size:13px;font-weight:600}
+  .whatif .note{color:var(--muted);font-size:12px;margin-bottom:10px}
+  .sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+           gap:6px 16px}
+  .sliders label{display:flex;align-items:center;gap:8px;font-size:12px}
+  .sliders .nm{flex:1;color:var(--muted)}
+  .sliders input{width:110px}
+  .sliders .vl{width:46px;text-align:right;font-variant-numeric:tabular-nums}
+  .changed{background:var(--bg-warning);color:var(--text-warning);
+           padding:8px 10px;border-radius:6px;font-size:12px;margin-top:10px}
+  .cmd{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;background:#f0efe9;
+       padding:8px 10px;border-radius:6px;margin-top:8px;overflow-x:auto;
+       white-space:pre-wrap;word-break:break-all}
   .foot{color:var(--muted);font-size:12px;margin-top:18px;border-top:1px solid var(--line);
         padding-top:10px}
   text{font-family:ui-sans-serif,system-ui,sans-serif}
@@ -94,13 +110,26 @@
   </div>
 
   <div class="toggles">
+    <label><input type="checkbox" id="map-on" checked> map</label>
     <label><input type="checkbox" id="radar-on" checked> radar</label>
     <label><input type="checkbox" id="show-below"> show below 0 dBZ</label>
     <span>0</span><span class="cbar"></span><span>65 dBZ</span>
     <span id="radar-src"></span>
   </div>
   <div class="scope"><svg id="plan" width="100%" viewBox="0 0 700 460"></svg></div>
+  <div id="attrib" style="font-size:11px;color:var(--muted);margin:-6px 0 12px"></div>
   <div class="scope"><svg id="xsec" width="100%" viewBox="0 0 700 290"></svg></div>
+
+  <details class="whatif" id="whatif" hidden>
+    <summary style="cursor:pointer;font-weight:600;font-size:13px">
+      Classifier thresholds (what-if)</summary>
+    <div class="note">These re-run the classification in the browser to show
+      what would change. The verdict below is unaffected &mdash; it was computed
+      server-side with the thresholds these sliders started at. Copy the
+      command to make a change real.</div>
+    <div class="sliders" id="sliders"></div>
+    <div id="whatif-out"></div>
+  </details>
 
   <div class="row" id="timers"></div>
   <div class="crit" id="criteria"></div>
@@ -146,6 +175,86 @@ function decodeInt8(b64) {
   return out;
 }
 
+function hexToRgb(css) {
+  const probe = document.createElement("span");
+  probe.style.color = css;
+  document.body.append(probe);
+  const rgb = getComputedStyle(probe).color.match(/\d+/g).map(Number);
+  probe.remove();
+  return rgb.slice(0, 3);
+}
+
+function chamfer(mask, nx, ny) {
+  // Two-pass chamfer distance transform, in cells. Cheap on a 96x96 grid and
+  // accurate enough to offset a ring by a few nautical miles.
+  const INF = 1e9, d = new Float32Array(nx * ny);
+  for (let k = 0; k < d.length; k++) d[k] = mask[k] ? 0 : INF;
+  const at = (x, y) => (x < 0 || y < 0 || x >= nx || y >= ny) ? INF : d[y * nx + x];
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+    const k = y * nx + x;
+    d[k] = Math.min(d[k], at(x - 1, y) + 1, at(x, y - 1) + 1,
+                    at(x - 1, y - 1) + 1.414, at(x + 1, y - 1) + 1.414);
+  }
+  for (let y = ny - 1; y >= 0; y--) for (let x = nx - 1; x >= 0; x--) {
+    const k = y * nx + x;
+    d[k] = Math.min(d[k], at(x + 1, y) + 1, at(x, y + 1) + 1,
+                    at(x + 1, y + 1) + 1.414, at(x - 1, y + 1) + 1.414);
+  }
+  return d;
+}
+
+function overlayURL(ov, objects, units) {
+  // Objects painted from their actual footprint. A disc of equivalent area
+  // hides the difference between a compact cell and a sprawling deck, and
+  // the two demand very different judgement even at the same distance.
+  const c = document.createElement("canvas");
+  c.width = ov.nx; c.height = ov.ny;
+  const ctx = c.getContext("2d");
+  const img = ctx.createImageData(ov.nx, ov.ny);
+  const bin = atob(ov.data);
+  const palette = {};
+  ov.order.forEach((tid, i) => {
+    const type = (objects[tid] || {}).cloud_type || "unclassified";
+    palette[i + 1] = hexToRgb(TYPE_COLOR[type] || "var(--unk)");
+  });
+  const codes = new Uint8Array(bin.length);
+  for (let k = 0; k < bin.length; k++) codes[k] = bin.charCodeAt(k);
+
+  for (let k = 0; k < codes.length; k++) {
+    const v = codes[k];
+    if (!v || !palette[v]) { img.data[k * 4 + 3] = 0; continue; }
+    const [r, g, b] = palette[v];
+    img.data[k * 4] = r; img.data[k * 4 + 1] = g;
+    img.data[k * 4 + 2] = b; img.data[k * 4 + 3] = 130;
+  }
+
+  // Standoff rings, offset from the actual footprint rather than drawn as a
+  // circle round the centroid. For a sprawling object those are nowhere near
+  // each other, and it is the offset curve that says where the cloud stops
+  // mattering.
+  const cellsPerNmi = ov.nx / (2 * (ov.half_nmi || 26));
+  ov.order.forEach((tid, i) => {
+    const unit = (units || {})[tid];
+    if (!unit || !(unit.buffer_nmi > 0)) return;
+    const n = i + 1;
+    const own = new Uint8Array(codes.length);
+    for (let k = 0; k < codes.length; k++) own[k] = codes[k] === n ? 1 : 0;
+    const dist = chamfer(own, ov.nx, ov.ny);
+    const target = unit.buffer_nmi * cellsPerNmi;
+    const [rr, gg, bb] = hexToRgb(BUFFER_STROKE[unit.state] || "#888780");
+    const solid = unit.state !== "GO";
+    for (let k = 0; k < dist.length; k++) {
+      if (Math.abs(dist[k] - target) > 0.8) continue;
+      if (!solid && ((k % ov.nx) + ((k / ov.nx) | 0)) % 3) continue;
+      img.data[k * 4] = rr; img.data[k * 4 + 1] = gg;
+      img.data[k * 4 + 2] = bb; img.data[k * 4 + 3] = solid ? 235 : 150;
+    }
+  });
+
+  ctx.putImageData(img, 0, 0);
+  return c.toDataURL();
+}
+
 function rasterURL(r, showBelow) {
   const c = document.createElement("canvas");
   c.width = r.nx; c.height = r.ny;
@@ -176,6 +285,62 @@ function rasterURL(r, showBelow) {
   return c.toDataURL();
 }
 
+// Web Mercator tile maths. Each tile is placed by its own corners rather
+// than by one global transform, which absorbs the small difference between
+// Mercator and the flat-earth ENU frame over this extent.
+const TILE_URL = "https://basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png";
+const TILE_ATTRIB = "Map \u00A9 OpenStreetMap contributors, \u00A9 CARTO";
+
+const lon2tile = (lon, z) => (lon + 180) / 360 * Math.pow(2, z);
+const lat2tile = (lat, z) => {
+  const r = lat * Math.PI / 180;
+  return (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * Math.pow(2, z);
+};
+const tile2lon = (x, z) => x / Math.pow(2, z) * 360 - 180;
+const tile2lat = (y, z) => {
+  const n = Math.PI - 2 * Math.PI * y / Math.pow(2, z);
+  return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+};
+
+function llToEnuNmi(lat, lon, origin) {
+  const mLat = 111132.0, mLon = 111320.0 * Math.cos(origin.lat * Math.PI / 180);
+  return {e: (lon - origin.lon) * mLon / 1852, n: (lat - origin.lat) * mLat / 1852};
+}
+
+function drawTiles(svg, snap, PAD, PX, half) {
+  const origin = snap.origin;
+  if (!origin) return false;
+  const mPerPx = (half * 2 * 1852) / (half * 2 * PX);
+  const z = Math.max(6, Math.min(12, Math.round(
+    Math.log2(156543.03 * Math.cos(origin.lat * Math.PI / 180) / mPerPx))));
+
+  const dLat = (half * 1852 * 1.45) / 111132.0;
+  const dLon = (half * 1852 * 1.45) / (111320.0 * Math.cos(origin.lat * Math.PI / 180));
+  const x0 = Math.floor(lon2tile(origin.lon - dLon, z));
+  const x1 = Math.ceil(lon2tile(origin.lon + dLon, z));
+  const y0 = Math.floor(lat2tile(origin.lat + dLat, z));
+  const y1 = Math.ceil(lat2tile(origin.lat - dLat, z));
+  if ((x1 - x0) * (y1 - y0) > 64) return false;
+
+  const g = el("g", {opacity: 0.85});
+  for (let x = x0; x <= x1; x++) {
+    for (let y = y0; y <= y1; y++) {
+      const nw = llToEnuNmi(tile2lat(y, z), tile2lon(x, z), origin);
+      const se = llToEnuNmi(tile2lat(y + 1, z), tile2lon(x + 1, z), origin);
+      const px = PAD.x + nw.e * PX, py = PAD.y - nw.n * PX;
+      const w = (se.e - nw.e) * PX, h = (nw.n - se.n) * PX;
+      if (px > 700 || py > 460 || px + w < 0 || py + h < 0) continue;
+      g.append(el("image", {
+        href: TILE_URL.replace("{z}", z).replace("{x}", x).replace("{y}", y),
+        x: px, y: py, width: w, height: h, preserveAspectRatio: "none"
+      }));
+    }
+  }
+  svg.append(g);
+  return true;
+}
+
+const mapOn = () => document.getElementById("map-on").checked;
 const radarOn = () => document.getElementById("radar-on").checked;
 const showBelow = () => document.getElementById("show-below").checked;
 
@@ -191,18 +356,26 @@ const hhmmss = iso => iso ? iso.slice(11, 19) + "Z" : "";
 function drawPlan(snap, verdict) {
   const svg = document.getElementById("plan");
   svg.replaceChildren();
-  const PX = 10, PAD = {x: 150, y: 380};
+  const half = (snap.radar && snap.radar.plan && snap.radar.plan.extent.half_nmi)
+               || 26;
+  const PX = 215 / half;                     // fit the raster in the panel
+  const PAD = {x: 340, y: 230};              // pad centred, clouds on any side
   const az = (snap.azimuth_deg ?? 45) * Math.PI / 180;
   const pos = (bearing, range) => ({
     x: PAD.x + range * PX * Math.sin(bearing * Math.PI / 180),
     y: PAD.y - range * PX * Math.cos(bearing * Math.PI / 180)
   });
 
+  let tiled = false;
+  if (mapOn()) tiled = drawTiles(svg, snap, PAD, PX, half);
+  document.getElementById("attrib").textContent = tiled ? TILE_ATTRIB : "";
+
   if (snap.radar && radarOn()) {
     const rp = snap.radar.plan, h = (rp.extent.half_nmi || 26) * PX;
     svg.append(el("image", {href: rasterURL(rp, showBelow()),
                             x: PAD.x - h, y: PAD.y - h, width: 2 * h, height: 2 * h,
                             preserveAspectRatio: "none",
+                            opacity: tiled ? 0.72 : 1,
                             "image-rendering": "pixelated"}));
   }
 
@@ -219,22 +392,38 @@ function drawPlan(snap, verdict) {
   svg.append(el("line", {x1: PAD.x, y1: PAD.y, x2: end.x, y2: end.y,
                          stroke: "#d3d1c7", "stroke-width": 1, "stroke-dasharray": "4 4"}));
 
+  if (snap.overlay && snap.overlay.order.length) {
+    const h = (snap.overlay.half_nmi || half) * PX;
+    svg.append(el("image", {href: overlayURL(snap.overlay, snap.objects, verdict.units),
+                            x: PAD.x - h, y: PAD.y - h,
+                            width: 2 * h, height: 2 * h,
+                            preserveAspectRatio: "none",
+                            "image-rendering": "pixelated"}));
+  }
+
   for (const [oid, o] of Object.entries(snap.objects)) {
     if (o.range_nmi == null) continue;
     const p = pos(o.bearing_deg ?? 0, o.range_nmi);
     const rr = (o.radius_nmi ?? 1) * PX;
     const unit = verdict.units[oid];
-    if (unit && unit.buffer_nmi > 0) {
+    if (unit && unit.buffer_nmi > 0 && !snap.overlay) {
       svg.append(el("circle", {cx: p.x, cy: p.y, r: rr + unit.buffer_nmi * PX,
                                fill: "none", stroke: BUFFER_STROKE[unit.state],
                                "stroke-width": unit.state === "NO_GO" ? 1.4 : 1,
                                "stroke-dasharray": "5 4"}));
     }
-    svg.append(el("ellipse", {cx: p.x, cy: p.y, rx: rr, ry: rr * .68,
-                              fill: TYPE_COLOR[o.cloud_type] || "var(--unk)",
-                              "fill-opacity": .35,
-                              stroke: TYPE_COLOR[o.cloud_type] || "var(--unk)",
-                              "stroke-width": .5}));
+    if (unit && unit.buffer_nmi > 0) {
+      svg.append(el("text", {x: p.x, y: p.y + 16, class: "sl",
+                             "text-anchor": "middle"},
+                    `${unit.buffer_nmi} nmi`));
+    }
+    if (!snap.overlay) {
+      // No footprint raster: fall back to an outline, never a filled disc.
+      svg.append(el("ellipse", {cx: p.x, cy: p.y, rx: rr, ry: rr * .68,
+                                fill: "none",
+                                stroke: TYPE_COLOR[o.cloud_type] || "var(--unk)",
+                                "stroke-width": 1}));
+    }
     if (o.overridden_by) {
       svg.append(el("ellipse", {cx: p.x, cy: p.y, rx: rr + 4, ry: rr * .68 + 4,
                                 fill: "none", stroke: "#f1efe8", "stroke-width": 1.2,
@@ -244,7 +433,26 @@ function drawPlan(snap, verdict) {
     }
     svg.append(el("text", {x: p.x, y: p.y + 4, class: "slb",
                            "text-anchor": "middle"}, oid));
+    if (o.cloud_type && o.cloud_type !== "unclassified") {
+      svg.append(el("text", {x: p.x, y: p.y - rr * .68 - 5, class: "sl",
+                             "text-anchor": "middle"},
+                    o.cloud_type.replace(/_/g, " ")));
+    }
   }
+  for (const site of (snap.sites || [])) {
+    if (site.name === snap.pad) continue;
+    const p = llToEnuNmi(site.lat, site.lon, snap.origin || {lat: 0, lon: 0});
+    const x = PAD.x + p.e * PX, y = PAD.y - p.n * PX;
+    if (x < 0 || x > 700 || y < 0 || y > 460) continue;
+    const radar = site.kind === "radar";
+    svg.append(el(radar ? "rect" : "circle", radar
+      ? {x: x - 3, y: y - 3, width: 6, height: 6, fill: "none",
+         stroke: "#b4b2a9", "stroke-width": 1}
+      : {cx: x, cy: y, r: 2.5, fill: "none", stroke: "#b4b2a9",
+         "stroke-width": 1}));
+    svg.append(el("text", {x: x + 7, y: y + 4, class: "sl"}, site.name));
+  }
+
   svg.append(el("circle", {cx: PAD.x, cy: PAD.y, r: 5, fill: "#f1efe8"}));
   svg.append(el("text", {x: PAD.x - 30, y: PAD.y + 22, class: "slb"}, snap.pad || "pad"));
 
@@ -324,6 +532,8 @@ function render(snap, verdict, meta) {
   document.getElementById("scenario-name").textContent =
     `${meta.name || ""} \u00B7 azimuth ${(snap.azimuth_deg ?? 0).toFixed(0)}\u00B0 ` +
     `\u00B7 field mills: ${snap.field_mills_available ? "yes" : "no"} ` +
+    `\u00B7 disturbed wx: ${snap.disturbed_weather === true ? "declared YES"
+        : snap.disturbed_weather === false ? "declared none" : "undeclared"} ` +
     `\u00B7 tribo: ${snap.vehicle && snap.vehicle.triboelectric_exemption
         && snap.vehicle.triboelectric_exemption !== "none"
         ? "exempt " + snap.vehicle.triboelectric_exemption : "not exempt"} ` +
@@ -350,11 +560,9 @@ function render(snap, verdict, meta) {
   big.textContent = STATE_LABEL[verdict.state];
   const grow = document.createElement("div");
   grow.className = "grow";
-  const counts = ["NO_GO", "NO_GO_UNTIL", "INDETERMINATE"]
-    .map(s => [s, blocking.filter(r => r.state === s).length])
-    .filter(([, n]) => n > 0)
-    .map(([s, n]) => `${n} ${STATE_LABEL[s].toLowerCase()}`);
-  grow.textContent = counts.join(" \u00B7 ") || "all encoded criteria satisfied";
+  const names = [...new Set(blocking.map(r => r.rule_name || r.requirement_id))];
+  grow.textContent = names.length ? names.join(" \u00B7 ")
+                                  : "all encoded criteria satisfied";
   const when = document.createElement("div");
   when.style.fontSize = "13px";
   when.textContent = verdict.earliest_change
@@ -401,6 +609,15 @@ function render(snap, verdict, meta) {
   document.getElementById("radar-src").textContent =
     snap.radar ? snap.radar.source + " \u00B7 " + snap.radar.plan_mode : "no radar field";
   CURRENT = {snap, verdict, meta};
+  const panel = document.getElementById("whatif");
+  if (snap.classifier && Object.keys(snap.classifier.features).length) {
+    panel.hidden = false;
+    if (!LIVE_T) LIVE_T = {...snap.classifier.thresholds};
+    buildSliders(snap.classifier.thresholds);
+    runWhatIf();
+  } else {
+    panel.hidden = true;
+  }
   drawPlan(snap, verdict);
   drawXsec(snap);
 
@@ -436,9 +653,9 @@ function render(snap, verdict, meta) {
     const d = document.createElement("details");
     const s = document.createElement("summary");
     s.innerHTML =
-      `<span class="id">${r.requirement_id}</span>` +
-      `<span class="sec">${r.section}</span>` +
-      `<span class="ttl">${r.title} <span style="color:var(--muted)">[${r.unit_id}]</span></span>` +
+      `<span class="rule">${r.rule_name || r.requirement_id}</span>` +
+      `<span class="ttl">${r.title} <span>[${r.unit_id}]</span></span>` +
+      `<span class="sec">${r.requirement_id} \u00B7 ${r.section}</span>` +
       `<span class="pill ${r.state.toLowerCase()}">${STATE_LABEL[r.state]}` +
       `${r.release ? " " + hhmmss(r.release) : ""}</span>`;
     d.append(s);
@@ -455,8 +672,111 @@ function render(snap, verdict, meta) {
     `${verdict.results.length} requirement/unit pairs`;
 }
 
+// Mirror of llcc/classify.py. Kept in step by reading the server's own
+// thresholds and features out of the snapshot rather than hardcoding them, so
+// only the branch order can drift, not the numbers.
+const SLIDERS = [
+  ["convective_dbz_aloft", 10, 55, 1, "convective dBZ aloft"],
+  ["convective_aspect", 0.05, 1.0, 0.01, "convective aspect"],
+  ["stratiform_aspect", 0.02, 0.5, 0.01, "stratiform aspect"],
+  ["stratiform_area_km2", 25, 2000, 25, "stratiform area km2"],
+  ["stratiform_max_dbz_aloft", 5, 45, 1, "stratiform dBZ aloft"],
+  ["anvil_max_dbz", 5, 45, 1, "anvil max dBZ"],
+  ["cirrus_max_dbz", 0, 30, 1, "cirrus max dBZ"],
+  ["cirrus_max_temp_c", -40, 0, 1, "cirrus max temp C"],
+];
+
+function classifyJS(f, t) {
+  const pc = f.parent_coldest_top_c;
+  if (pc != null && pc <= t.anvil_parent_temp_c && f.max_dbz <= t.anvil_max_dbz
+      && f.base_temp_c != null && f.base_temp_c <= t.anvil_min_base_temp_c) {
+    const attached = (f.connected_types || [])
+      .some(c => c === "cumulus" || c === "smoke_cumulus");
+    return attached ? "attached_anvil" : "detached_anvil";
+  }
+  if (pc != null && pc <= t.debris_parent_temp_c && f.detached
+      && f.top_temp_c != null && f.top_temp_c > t.debris_collapse_temp_c) {
+    return "debris";
+  }
+  if (f.max_dbz_aloft >= t.convective_dbz_aloft) return "cumulus";
+  if (f.aspect >= t.convective_aspect && f.max_dbz >= 20.0) return "cumulus";
+  if (f.top_temp_c != null && f.top_temp_c <= t.cirrus_max_temp_c
+      && f.base_temp_c != null && f.base_temp_c <= t.cirrus_max_temp_c
+      && f.max_dbz <= t.cirrus_max_dbz && pc == null) return "cirriform";
+  const broad = f.area_km2 >= t.stratiform_area_km2
+    && f.aspect <= t.stratiform_aspect
+    && f.max_dbz_aloft <= t.stratiform_max_dbz_aloft;
+  if (broad || (f.bright_band && f.max_dbz_aloft <= t.stratiform_max_dbz_aloft))
+    return "thick_layer";
+  return "cumulus";
+}
+
+function standoffJS(type, f) {
+  if (type === "cumulus" || type === "smoke_cumulus") {
+    if (f.top_temp_c == null) return 10;
+    if (f.top_temp_c <= -20) return 10;
+    if (f.top_temp_c <= -10) return 5;
+    return 0;
+  }
+  if (type === "attached_anvil")
+    return (f.parent_coldest_top_c != null && f.parent_coldest_top_c > -10) ? 0 : 3;
+  if (type === "detached_anvil") return 3;
+  if (type === "debris") return 3;
+  return 0;
+}
+
+let LIVE_T = null;
+
+function buildSliders(base) {
+  const host = document.getElementById("sliders");
+  if (host.childElementCount) return;
+  for (const [key, lo, hi, step, label] of SLIDERS) {
+    if (!(key in base)) continue;
+    const row = document.createElement("label");
+    row.innerHTML = `<span class="nm">${label}</span>` +
+      `<input type="range" min="${lo}" max="${hi}" step="${step}" ` +
+      `value="${base[key]}" data-key="${key}">` +
+      `<span class="vl">${base[key]}</span>`;
+    const input = row.querySelector("input");
+    input.addEventListener("input", () => {
+      LIVE_T[input.dataset.key] = parseFloat(input.value);
+      row.querySelector(".vl").textContent = input.value;
+      runWhatIf();
+    });
+    host.append(row);
+  }
+}
+
+function runWhatIf() {
+  const snap = CURRENT && CURRENT.snap;
+  const cs = snap && snap.classifier;
+  const out = document.getElementById("whatif-out");
+  if (!cs) return;
+  const rows = [];
+  for (const [tid, f] of Object.entries(cs.features)) {
+    const now = (snap.objects[tid] || {}).cloud_type;
+    const next = classifyJS(f, LIVE_T);
+    if (next !== now) {
+      rows.push(`${tid}: ${now} \u2192 ${next} ` +
+                `(standoff ${standoffJS(now, f)} \u2192 ${standoffJS(next, f)} nmi)`);
+    }
+  }
+  const flags = Object.entries(LIVE_T)
+    .filter(([k, v]) => v !== cs.thresholds[k])
+    .map(([k, v]) => `--threshold ${k}=${v}`);
+  out.innerHTML = rows.length
+    ? `<div class="changed"><strong>${rows.length} object(s) would ` +
+      `reclassify on this frame.</strong><br>${rows.join("<br>")}</div>`
+    : `<div class="note" style="margin:10px 0 0">No object on this frame ` +
+      `changes type at these settings.</div>`;
+  if (flags.length) {
+    out.innerHTML += `<div class="cmd">python3 run_live.py ... ` +
+      flags.join(" ") + `</div>`;
+  }
+}
+
 let CURRENT = null;
-for (const id of ["radar-on", "show-below"]) {
+for (const id of ["map-on", "radar-on", "show-below"]) {
   document.getElementById(id).addEventListener("change", () => {
     if (CURRENT) render(CURRENT.snap, CURRENT.verdict, CURRENT.meta);
   });

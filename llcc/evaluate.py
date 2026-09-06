@@ -17,7 +17,7 @@ from datetime import datetime
 from enum import Enum
 
 from .expr import Context, Trace
-from .requirements import ENCODED, MANIFEST, Requirement, missing_ids
+from .requirements import ENCODED, MANIFEST, Requirement, missing_ids, rule_name
 from .tvl import Tri, not_, or_
 from .world import CloudObject, CloudType, WorldSnapshot
 
@@ -265,8 +265,8 @@ def format_verdict(verdict: Verdict, verbose: bool = False) -> str:
                      f"requirements unencoded -> global indeterminate")
     for r in sorted(verdict.blocking, key=lambda r: (int(r.requirement_id.split()[1]), r.unit_id)):
         tail = f" {r.release:%H:%M:%S}Z" if r.release else ""
-        lines.append(f"  {r.requirement_id:<9} {r.section:<9} {str(r.state)}{tail}"
-                     f"   [{r.unit_id}] {r.title}")
+        lines.append(f"  {rule_name(r.section):<28} {str(r.state)}{tail}"
+                     f"   [{r.unit_id}]  {r.requirement_id} {r.section}")
         if verbose:
             lines.append("    trigger:")
             lines.append(_indent(r.trigger.render(), 6))

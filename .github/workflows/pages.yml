@@ -22,6 +22,7 @@ jobs:
           python tests_geometry.py
           python tests_segment.py
           python tests_pipeline.py
+          python tests_ingest.py
       - name: regression check
         run: python run_replay.py scenarios/lc39a_20260904.json --check
       - name: emit display data

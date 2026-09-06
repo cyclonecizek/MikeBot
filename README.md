@@ -9,6 +9,7 @@ Requires Python 3.12+. No third-party dependencies.
     python3 tests_geometry.py        # geometry, needs numpy + scipy
     python3 tests_segment.py         # segmentation, also needs scikit-image
     python3 tests_pipeline.py        # end to end, scan to verdict
+    python3 tests_ingest.py          # beam geometry, QC, parsing
     python3 demo_pipeline.py         # regenerate docs/data from the pipeline
     python3 run_replay.py scenarios/lc39a_20260904.json --check
     python3 run_replay.py scenarios/lc39a_20260904.json -v --assume-manifest-complete
@@ -23,6 +24,10 @@ Requires Python 3.12+. No third-party dependencies.
 | `llcc/requirements.py` | Encoded LLCCRs and the Appendix A manifest |
 | `llcc/evaluate.py` | Section 4.3 pre-pass, requirement walker, mission reduction |
 | `llcc/replay.py` | Scenario loader and regression check |
+| `llcc/ingest/beam.py` | Beam geometry, MDS, observability, dual-pol QC (tested) |
+| `llcc/ingest/nexrad.py` | Level II fetch, decode, gridding (UNVERIFIED) |
+| `llcc/ingest/glm.py` | GLM fetch and flash footprints (partly UNVERIFIED) |
+| `llcc/ingest/profile.py` | Soundings and model columns to a thermal profile |
 | `llcc/pipeline.py` | Assembler: scan -> segment -> track -> geometry -> snapshot |
 | `llcc/segment.py` | Hysteresis threshold, watershed, connection graph |
 | `llcc/track.py` | Motion, association, split/merge events, lineage |
@@ -58,6 +63,47 @@ Field mills are out of scope, so `FieldMills` evaluates false and every
 mill-dependent exception is unavailable without special-casing. The Rev B
 cumulus clauses that read "if mills are available" remain usable, because
 that clause is conditional on availability.
+
+## Ingest
+
+Split by what can be verified.
+
+**Tested:** beam geometry, minimum detectable signal, the observability
+mask, dual-pol QC, S3 listing parsing, GLM footprint construction, and
+sounding parsing. All pure functions of arrays or text.
+
+**UNVERIFIED:** every function that touches the network or needs Py-ART or
+netCDF4. They are written against the documented APIs but have never been
+run against a real file. Marked in the source. Shake them out on first use;
+do not assume they work because the tests pass. The Py-ART field names and
+the volume timestamp parse are the likeliest to bite.
+
+    pip install arm-pyart netCDF4
+    python3 run_live.py --time "2026-09-04T21:04:00" --sounding xmr.txt
+
+Points worth knowing:
+
+- The observability mask is real geometry: 4/3-earth beam height, beam width
+  growing to about 1.6 km at 100 km, and sensitivity falling as
+  20*log10(range). Past the range where 0 dBZ drops below the noise floor,
+  an empty gate means nothing, so it is UNOBSERVABLE rather than clear. The
+  cone of silence falls out of the tilt list rather than being special-cased.
+- That 1.6 km of beam width is roughly 10 C in a Florida summer profile --
+  the entire gap between the -10 C and -20 C criterion tiers. It should
+  propagate into the display as a band, not a number.
+- Dual-pol QC runs on polar gates *before* gridding. Filtering afterwards
+  smears non-meteorological returns into neighbouring cells instead of
+  removing them. Without dual-pol the filter degrades to a finite-value
+  check, which is much weaker -- the output says so rather than implying the
+  QC ran.
+- GLM uses the union of group footprints, never the flash centroid. The
+  centroid is energy-weighted and sits well inside the true extent, which
+  would systematically understate distance to the flight path. Navigation
+  and parallax error are handled by dilating the footprint rather than
+  correcting it: auditable, and it shortens no standoff.
+- Ingest a much wider lightning window than the criteria need. A cell that
+  flashed 40 nmi offshore an hour ago still governs 4.1.1.2 and every anvil
+  clock; objects arriving without that history are stuck as indeterminate.
 
 ## Pipeline
 

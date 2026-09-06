@@ -1,0 +1,54 @@
+QUICKSTART
+==========
+
+Requires Python 3.12 or newer. Nothing to install: no pip, no dependencies.
+
+1. Unzip this folder somewhere and open a terminal in it.
+   You should see: llcc/  scenarios/  docs/  tests.py  run_replay.py
+
+2. Check your Python:
+       python3 --version          (macOS / Linux)
+       py --version               (Windows)
+   If it says 3.12 or higher, you are good. Substitute your command for
+   "python3" everywhere below.
+
+3. Run the tests:
+       python3 tests.py
+   Expect a list of "pass" lines ending in "all tests passed".
+
+4. Replay the sample scenario:
+       python3 run_replay.py scenarios/lc39a_20260904.json --check
+   Prints a verdict per frame, then compares against the stored baseline.
+
+   Add -v to see the full evidence trace for every blocking requirement:
+       python3 run_replay.py scenarios/lc39a_20260904.json -v --assume-manifest-complete
+
+5. Build the display data:
+       python3 emit_verdict.py scenarios/lc39a_20260904.json --assume-manifest-complete
+   Writes docs/data/replay.json, snapshot.json, verdict.json
+
+6. View the display:
+       python3 -m http.server 8000 --directory docs
+   Then open http://localhost:8000 in a browser.
+   Press Ctrl+C in the terminal to stop the server.
+
+   Do NOT open docs/index.html by double-clicking it. Browsers block
+   fetch() from file:// URLs, so the page will load but stay empty.
+   It must be served over http, which is what step 6 does.
+
+TROUBLESHOOTING
+---------------
+"ModuleNotFoundError: No module named 'llcc'"
+    You are in the wrong directory. cd to the folder containing tests.py.
+
+"python3: command not found"
+    Try "python" or "py". On Windows, "py" is usually correct.
+
+"SyntaxError" mentioning "|" or "match"
+    Your Python is older than 3.12. Install a newer one from python.org.
+
+Page loads but is blank
+    You opened the file directly instead of serving it. See step 6.
+
+Port 8000 already in use
+    Pick another: python3 -m http.server 8080 --directory docs

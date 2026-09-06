@@ -191,6 +191,8 @@ class CloudObject:
 
     attached_to_smoke_plume: bool | None = None
     is_thunderstorm: bool | None = None
+    parent_had_part_colder_than_minus20: bool | None = None
+    formed_by_thunderstorm: bool | None = None
     # Set by the override pass. The tracker's own label is preserved in
     # override_original_type so the display never presents a human judgment
     # as though the system produced it.
@@ -255,6 +257,23 @@ class WorldSnapshot:
         if kind is not None:
             out = [e for e in out if e.kind == kind]
         return sorted(out, key=lambda e: e.time)
+
+    def direct_events(self, object_id: str, kind: str | None = None) -> list[Event]:
+        """Events attributed to this object alone, without walking lineage.
+
+        Section 4.1.6.1c says the debris clock restarts on a discharge
+        "within or from the debris cloud" -- not, as in 4.1.5.2b and 4.1.5.3,
+        from the parent before detachment. A parent's later flash belongs to
+        the parent, so the debris basis must not inherit.
+        """
+        out = [e for e in self.events if e.object_id == object_id]
+        if kind is not None:
+            out = [e for e in out if e.kind == kind]
+        return sorted(out, key=lambda e: e.time)
+
+    def last_direct_event_time(self, object_id: str, kind: str) -> datetime | None:
+        evs = self.direct_events(object_id, kind)
+        return evs[-1].time if evs else None
 
     def last_event_time(self, object_id: str, kind: str) -> datetime | None:
         evs = self.events_for(object_id, kind)
